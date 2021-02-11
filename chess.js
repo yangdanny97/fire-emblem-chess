@@ -1,6 +1,6 @@
 const Colors = {
-    "white": 0,
-    "black": 1
+    "white": "White",
+    "black": "Black",
 }
 
 class Piece {
@@ -9,6 +9,7 @@ class Piece {
         this.x = x;
         this.y = y;
         this.hasMoved = false;
+        this.emphasizeThreatenRange = false;
     }
 
     handleMove(position) {
@@ -64,6 +65,7 @@ class Piece {
                 break;
             }
         }
+        return positions;
     }
 
     getUnobstructedCardinalPositions(board) {
@@ -386,7 +388,7 @@ class Board {
                 }
                 return true;
             });
-            pieces.push(piece);
+            pieces.push(piece2);
         }
         var newBoard = new Board(pieces);
         // resulting position cannot cause own king to be in check
@@ -431,36 +433,46 @@ class Board {
         return !ownKingInCheck;
     }
 
-    getThreatenedPositions(color) {
-        return this.pieces.filter(p => p.color === color)
-            .reduce((acc, p) => acc.concat(p.getThreatenedPositions(this)), [])
-            .sort((a, b) => {
-                if (a[0] === b[0]) {
-                    return a[1] - b[1];
-                }
-                return a[0] - b[0];
-            })
-            .reduce((acc, pos) => {
-                if (acc.length > 0 &&
-                    pos[0] === acc[acc.length - 1][0] &&
-                    pos[1] === acc[acc.length - 1][1]
-                ) {
-                    return acc;
-                }
-                acc.push(pos);
+    threatenedPositionsHelper(pieces) {
+        return pieces.reduce((acc, p) => acc.concat(p.getThreatenedPositions(this)), [])
+        .sort((a, b) => {
+            if (a[0] === b[0]) {
+                return a[1] - b[1];
+            }
+            return a[0] - b[0];
+        })
+        .reduce((acc, pos) => {
+            if (acc.length > 0 &&
+                pos[0] === acc[acc.length - 1][0] &&
+                pos[1] === acc[acc.length - 1][1]
+            ) {
                 return acc;
-            }, []);
+            }
+            acc.push(pos);
+            return acc;
+        }, []);
+    }
+
+    getThreatenedPositions(color) {
+        return this.threatenedPositionsHelper(
+            this.pieces.filter(p => p.color === color)
+        );
+    }
+
+    getEmphasizedThreatenedPositions(color) {
+        return this.threatenedPositionsHelper(
+            this.pieces.filter(p => p.color === color && p.emphasizeThreatenRange)
+        );
     }
 }
 
 class Game {
     constructor() {
-        this.color = Colors.white;
-        this.selected_piece = null;
+        this.turn = Colors.white;
+        this.selectedPiece = null;
         this.legalMoves = null; // legal moves of currently selected piece
         // start cursor at white king
-        this.cursor_x = 4;
-        this.cursor_y = 0;
+        this.cursorPosition = [4, 0];
         this.board = new Board([
             // white pawns
             new Pawn(Colors.white, 0, 1),
@@ -501,19 +513,155 @@ class Game {
         ]);
     }
 
-    // TODO
+    handleTurnStart() {
+        var color = this.turn;
+        // make sure player is not checkmated
+        var otherColor = (color === Colors.white) ? Colors.black : Colors.white;
+        var ownKing = this.board.pieces.filter(
+            p => p.color === color && p instanceof King
+        )[0];
+        var otherThreatenedPositions = this.board.getThreatenedPositions(otherColor);
+        var ownKingInCheck = otherThreatenedPositions
+            .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
+        if (ownKingInCheck) {
+            var legalMoves = this.board.pieces.filter(
+                p => p.color === color
+            ).reduce((acc, p) => acc + p.getLegalMoves().length, 0);
+            if (legalMoves.length === 0) {
+                alert(`${color} has been checkmated!`);
+            }
+        }
+    }
 
-    handleSelect() {}
+    successSound() {
+        // TODO
+    }
 
-    handleCancel() {}
+    failureSound() {
+        // TODO
+    }
 
-    handleLeft() {}
+    moveSound() {
+        // TODO
+    }
 
-    handleRight() {}
+    turnStartSound() {
+        // TODO
+    }
 
-    handleUp() {}
+    captureSound() {
+        // TODO
+    }
 
-    handleDown() {}
+    handleSelect() {
+        if (this.selectedPiece === null) {
+            var piece = this.board.getPiece(
+                this.cursorPosition[0], 
+                this.cursorPosition[1], 
+            );
+            if (piece === null) {
+                // select nothing
+                this.failureSound();
+            } else if (piece.color === this.turn) {
+                // select friendly piece
+                this.selectedPiece = piece;
+                this.legalMoves = piece.getLegalMoves(this.board);
+                this.draw();
+            } else {
+                // select enemy piece - toggle threaten range highlight
+                piece.emphasizeThreatenRange = !piece.emphasizeThreatenRange;
+                this.draw();
+            }
+        } else {
+            var piece = this.board.getPiece(
+                this.cursorPosition[0], 
+                this.cursorPosition[1], 
+            );
+            if (piece === null || piece.color !== this.turn) {
+                // select empty space or enemy piece - try to move
+                var legalMove = this.legalMoves.filter(m => 
+                    m[0] === this.cursorPosition[0] && 
+                    m[1] === this.cursorPosition[1]
+                );
+                if (legalMove.length > 0) {
+                    var move = legalMove[0];
+                    var pieces = this.board.pieces.length;
+                    this.board.confirmMove(this.selectedPiece, move);
+                    if (pieces > this.board.pieces.length) {
+                        this.captureSound();
+                    } else {
+                        this.moveSound();
+                    }
+                } else {
+                    this.failureSound();
+                }
+            } else {
+                // select different friendly piece
+                if (
+                    this.cursorPosition[0] !== this.selectedPiece.x || 
+                    this.cursorPosition[1] !== this.selectedPiece.y
+                ) {
+                    this.selectedPiece = piece;
+                    this.legalMoves = piece.getLegalMoves(this.board);
+                    this.successSound();
+                    this.draw();
+                }
+            }
+        }
+    }
 
-    handleMove() {}
+    handleCancel() {
+        if (this.selectedPiece !== null) {
+            this.successSound();
+        } else {
+            this.failureSound();
+        }
+        this.legalMoves = null;
+        this.selectedPiece = null;
+        this.draw();
+    }
+
+    handleLeft() {
+        if (cursorPosition[0] > 0) {
+            cursorPosition[0] -= 1;
+            this.handleMove();
+        }
+    }
+
+    handleRight() {
+        if (cursorPosition[0] < 7) {
+            cursorPosition[0] += 1;
+            this.handleMove();
+        }
+    }
+
+    handleDown() {
+        if (cursorPosition[1] > 0) {
+            cursorPosition[1] -= 1;
+            this.handleMove();
+        }
+    }
+
+    handleUp() {
+        if (cursorPosition[1] < 7) {
+            cursorPosition[1] += 1;
+            this.handleMove();
+        }
+    }
+
+    handleMove() {
+        if (this.selectedPiece === null) {
+
+        } else {
+
+        }
+        this.moveSound();
+        this.draw();
+    }
+
+    draw() {
+        var otherColor = (this.turn === Colors.white) ? Colors.black : Colors.white;
+        var threatenedPositions = this.board.getThreatenedPositions(otherColor);
+        var emphasizedThreatenedPositions = this.board.getEmphasizedThreatenedPositions(otherColor);
+    }
 }
