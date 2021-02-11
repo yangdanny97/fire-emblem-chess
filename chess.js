@@ -112,7 +112,7 @@ class Pawn extends Piece {
 
     // ie: unoccupied positions that an opposing king cannot move to
     // accounts for obstruction but not discovery
-    getThreatenedSquares(board) {
+    getThreatenedPositions(board) {
         var positions = [];
         var pos;
         if (this.x > 0) {
@@ -156,7 +156,7 @@ class Pawn extends Piece {
             }
         }
         // capture
-        this.getThreatenedSquares().forEach(p => {
+        this.getThreatenedPositions().forEach(p => {
             if (board.hasOppositeColorPiece(this, p[0], p[1])) {
                 // regular capture
                 positions.push(p);
@@ -184,7 +184,13 @@ class Pawn extends Piece {
 }
 
 class King extends Piece {
-    getThreatenedSquares(board) {
+    constructor(color, x, y) {
+        super(color, x, y);
+        this.inCheck = false;
+        this.checkMated = false;
+    }
+
+    getThreatenedPositions(board) {
         var positions = [
             [this.x - 1, this.y],
             [this.x - 1, this.y - 1],
@@ -199,10 +205,10 @@ class King extends Piece {
     }
 
     getLegalMoves(board) {
-        var positions = this.getThreatenedSquares(board)
+        var positions = this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
         // castling
-        if (!this.hasMoved) {
+        if (!this.hasMoved && !this.inCheck) {
             var y = (this.color === Colors.white) ? 0 : 7;
             var leftRook = board.getPiece(0, y);
             if (leftRook !== null &&
@@ -216,8 +222,7 @@ class King extends Piece {
                     !board.hasPiece(1, y) && 
                     !board.hasPiece(2, y) && 
                     !board.hasPiece(3, y) && 
-                    // cannot castle out of check or through check
-                    board.validateBoardStateForMove(this, [4, y]) && 
+                    // cannot move through check
                     board.validateBoardStateForMove(this, [3, y]) && 
                     board.validateBoardStateForMove(this, [2, y]) && 
                     board.validateBoardStateForMove(this, [2, y], leftRook, [3, y])
@@ -248,30 +253,30 @@ class King extends Piece {
 }
 
 class Queen extends Piece {
-    getThreatenedSquares(board) {
+    getThreatenedPositions(board) {
         return this.getUnobstructedCardinalPositions(board)
             .concat(this.getUnobstructedDiagonalPositions(board));
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedSquares(board)
+        return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
 }
 
 class Bishop extends Piece {
-    getThreatenedSquares(board) {
+    getThreatenedPositions(board) {
         return this.getUnobstructedDiagonalPositions(board)
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedSquares(board)
+        return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
 }
 
 class Knight extends Piece {
-    getThreatenedSquares(board) {
+    getThreatenedPositions(board) {
         var positions = [
             [this.x - 2, this.y - 1],
             [this.x - 2, this.y + 1],
@@ -286,18 +291,18 @@ class Knight extends Piece {
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedSquares(board)
+        return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
 }
 
 class Rook extends Piece {
-    getThreatenedSquares(board) {
+    getThreatenedPositions(board) {
         return this.getUnobstructedCardinalPositions(board);
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedSquares(board)
+        return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
 }
@@ -327,7 +332,7 @@ class Board {
     }
 
     // validate obstructions & boundaries, but does not look for check/checkmate
-    // does not check entire path, only ending position
+    // does not check obstructions along entire path, only the ending position
     checkUnobstructed(piece, end, canCapture = true) {
         if (end[0] < 0 || end[0] > 7 || end[1] < 0 || end[1] > 7) {
             return false;
@@ -384,6 +389,7 @@ class Board {
             pieces.push(piece);
         }
         var newBoard = new Board(pieces);
+        // resulting position cannot cause own king to be in check
         var result = newBoard.validateBoard(piece.color);
         piece.x = xi;
         piece.y = yi;
@@ -412,14 +418,38 @@ class Board {
         this.pieces = pieces;
     }
 
-    validateBoard(mostRecentTurnColor) {
-        // TODO
-        return false;
+    // validates check
+    validateBoard(movedColor) {
+        var otherColor = (movedColor === Colors.white) ? Colors.black : Colors.white;
+        var ownKing = this.pieces.filter(
+            p => p.color === movedColor && p instanceof King
+        )[0];
+        var otherThreatenedPositions = this.getThreatenedPositions(otherColor);
+        
+        var ownKingInCheck = otherThreatenedPositions
+            .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
+        return !ownKingInCheck;
     }
 
-    getThreatenedSquares(color) {
-        // TODO
-        return [];
+    getThreatenedPositions(color) {
+        return this.pieces.filter(p => p.color === color)
+            .reduce((acc, p) => acc.concat(p.getThreatenedPositions(this)), [])
+            .sort((a, b) => {
+                if (a[0] === b[0]) {
+                    return a[1] - b[1];
+                }
+                return a[0] - b[0];
+            })
+            .reduce((acc, pos) => {
+                if (acc.length > 0 &&
+                    pos[0] === acc[acc.length - 1][0] &&
+                    pos[1] === acc[acc.length - 1][1]
+                ) {
+                    return acc;
+                }
+                acc.push(pos);
+                return acc;
+            }, []);
     }
 }
 
