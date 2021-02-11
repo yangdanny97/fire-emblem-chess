@@ -416,16 +416,74 @@ class Board {
         // TODO
         return false;
     }
+
+    getThreatenedSquares(color) {
+        // TODO
+        return [];
+    }
 }
 
 class Game {
     constructor() {
         this.color = Colors.white;
         this.selected_piece = null;
+        this.legalMoves = null; // legal moves of currently selected piece
         // start cursor at white king
-        this.cursor_x = 3;
+        this.cursor_x = 4;
         this.cursor_y = 0;
+        this.board = new Board([
+            // white pawns
+            new Pawn(Colors.white, 0, 1),
+            new Pawn(Colors.white, 1, 1),
+            new Pawn(Colors.white, 2, 1),
+            new Pawn(Colors.white, 3, 1),
+            new Pawn(Colors.white, 4, 1),
+            new Pawn(Colors.white, 5, 1),
+            new Pawn(Colors.white, 6, 1),
+            new Pawn(Colors.white, 7, 1),
+            // white pieces
+            new Rook(Colors.white, 0, 0),
+            new Rook(Colors.white, 7, 0),
+            new Knight(Colors.white, 1, 0),
+            new Knight(Colors.white, 6, 0),
+            new Bishop(Colors.white, 2, 0),
+            new Bishop(Colors.white, 5, 0),
+            new Queen(Colors.white, 3, 0),
+            new King(Colors.white, 4, 0),
+            // black pawns
+            new Pawn(Colors.black, 0, 6),
+            new Pawn(Colors.black, 1, 6),
+            new Pawn(Colors.black, 2, 6),
+            new Pawn(Colors.black, 3, 6),
+            new Pawn(Colors.black, 4, 6),
+            new Pawn(Colors.black, 5, 6),
+            new Pawn(Colors.black, 6, 6),
+            new Pawn(Colors.black, 7, 6),
+            // black pieces
+            new Rook(Colors.black, 0, 7),
+            new Rook(Colors.black, 7, 7),
+            new Knight(Colors.black, 1, 7),
+            new Knight(Colors.black, 6, 7),
+            new Bishop(Colors.black, 2, 7),
+            new Bishop(Colors.black, 5, 7),
+            new Queen(Colors.black, 3, 7),
+            new King(Colors.black, 4, 7),
+        ]);
     }
 
     // TODO
+
+    handleSelect() {}
+
+    handleCancel() {}
+
+    handleLeft() {}
+
+    handleRight() {}
+
+    handleUp() {}
+
+    handleDown() {}
+
+    handleMove() {}
 }
