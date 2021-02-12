@@ -3,14 +3,47 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="./chess.js"></script>
+    <script src="./pieces.js"></script>
+    <script src="./board.js"></script>
+    <script src="./game.js"></script>
 </head>
+<style>
+    body {
+        image-rendering: -moz-crisp-edges;
+    }
 
+    .selection {
+        animation: blinking 1s linear infinite;
+    }
+
+    @keyframes blinking {
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
 <body>
     <svg id="board" width="736px" height="736px"></svg>
     <script>
         var game = new Game();
         game.draw();
+
+        var body = d3.select("body");
+        body.on("keydown", () => {
+            if (d3.event.keyCode === 87) { // W
+                game.handleUp();
+            } else if (d3.event.keyCode === 65) { // A
+                game.handleLeft();
+            } else if (d3.event.keyCode === 83) { // S
+                game.handleDown();
+            } else if (d3.event.keyCode === 68) { // D
+                game.handleRight();
+            } else if (d3.event.keyCode === 88) { // X
+                game.handleSelect();
+            } else if (d3.event.keyCode === 90) { // Z
+                game.handleCancel();
+            }
+        });
     </script>
 </body>
 

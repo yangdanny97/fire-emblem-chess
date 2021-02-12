@@ -9,14 +9,14 @@ This is designed to be played on a single computer, passed back and forth betwee
 
 ### Legend
 
-| Chess Piece | FE Unit/Class  |
-|-------------|----------------|
-| Pawn        | Phantom        |
-| Bishop      | Bishop         |
-| Knight      | Great Knight   |
-| Rook        | Ballista       |
-| King        | Pontifex (NPC) |
-| Queen       | Queen (NPC)    |
+| Chess Piece | FE Unit/Class          |
+|-------------|------------------------|
+| Pawn        | Recruit                |
+| Bishop      | Bishop                 |
+| Knight      | Great Knight/Paladin   |
+| Rook        | Ballista               |
+| King        | Pontifex (NPC)         |
+| Queen       | Queen (NPC)            |
 
 ### How to Run
 Coming Soon
@@ -26,10 +26,6 @@ Coming Soon
 ### Why didn't I use one of the many existing chess libraries?
 
 I wasn't sure how to extract the necessary data to display which squares are threatened by an enemy piece and keep it updated as the cursor moves, so I figured it wouldn't be too hard to just write a chess library myself. Back when I TA'ed a functional programming class in college, a few students submitted terminal-based chess games as their final projects, so I thought it could be fun to build one myself. That said, this project isn't written completely in a functional style, although it might be fun to migrate everything to Reason one day.
-
-### Why is everything in a single JS file?
-
-I learned Javascript in the JQuery days before all the advanced features were added, so I never figured out how dependency management works. In fact, this is my first time using classes in JS. Feel free to refactor and move things to separate files.
 
 ### Why do I use D3 to render things instead of ___?
 
