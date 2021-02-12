@@ -3,6 +3,9 @@ const Colors = {
     "black": "Black",
 }
 
+const ScalingFactor = 4;
+const AssetSize = 23;
+
 class Piece {
     constructor(color, x, y) {
         this.color = color;
@@ -183,6 +186,10 @@ class Pawn extends Piece {
         }
         this.hasMoved = true;
     }
+
+    getAsset() {
+        return `sprites/${this.color}/pawn`;
+    }
 }
 
 class King extends Piece {
@@ -252,6 +259,10 @@ class King extends Piece {
         }
         return positions;
     }
+
+    getAsset() {
+        return `sprites/${this.color}/king`;
+    }
 }
 
 class Queen extends Piece {
@@ -264,6 +275,10 @@ class Queen extends Piece {
         return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
+
+    getAsset() {
+        return `sprites/${this.color}/queen`;
+    }
 }
 
 class Bishop extends Piece {
@@ -274,6 +289,10 @@ class Bishop extends Piece {
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
+    }
+
+    getAsset() {
+        return `sprites/${this.color}/bishop`;
     }
 }
 
@@ -296,6 +315,10 @@ class Knight extends Piece {
         return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
     }
+
+    getAsset() {
+        return `sprites/${this.color}/knight`;
+    }
 }
 
 class Rook extends Piece {
@@ -306,6 +329,10 @@ class Rook extends Piece {
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
             .filter(p => board.validateBoardStateForMove(this, p));
+    }
+
+    getAsset() {
+        return `sprites/${this.color}/rook`;
     }
 }
 
@@ -513,6 +540,11 @@ class Game {
         ]);
     }
 
+    // util function for converting 0,0 -> A1, etc.
+    positionToId(x, y) {
+        return `${String.fromCharCode(x + 65)}${y + 1}`;
+    }
+
     handleTurnStart() {
         var color = this.turn;
         // make sure player is not checkmated
@@ -554,6 +586,8 @@ class Game {
     }
 
     handleSelect() {
+        console.log("select");
+        console.log(this.cursorPosition);
         if (this.selectedPiece === null) {
             var piece = this.board.getPiece(
                 this.cursorPosition[0], 
@@ -611,6 +645,8 @@ class Game {
     }
 
     handleCancel() {
+        console.log("deselect");
+        console.log(this.cursorPosition);
         if (this.selectedPiece !== null) {
             this.successSound();
         } else {
@@ -622,46 +658,143 @@ class Game {
     }
 
     handleLeft() {
-        if (cursorPosition[0] > 0) {
-            cursorPosition[0] -= 1;
-            this.handleMove();
+        if (this.turn === Colors.white) {
+            if (this.cursorPosition[0] > 0) {
+                this.cursorPosition[0] -= 1;
+                this.handleMoveCursor();
+            }
+        } else {
+            if (this.cursorPosition[0] < 7) {
+                this.cursorPosition[0] += 1;
+                this.handleMoveCursor();
+            }
         }
     }
 
     handleRight() {
-        if (cursorPosition[0] < 7) {
-            cursorPosition[0] += 1;
-            this.handleMove();
+        if (this.turn === Colors.white) {
+            if (this.cursorPosition[0] < 7) {
+                this.cursorPosition[0] += 1;
+                this.handleMoveCursor();
+            }
+        } else {
+            if (this.cursorPosition[0] > 0) {
+                this.cursorPosition[0] -= 1;
+                this.handleMoveCursor();
+            }
         }
     }
 
     handleDown() {
-        if (cursorPosition[1] > 0) {
-            cursorPosition[1] -= 1;
-            this.handleMove();
+        if (this.turn === Colors.white) {
+            if (this.cursorPosition[1] > 0) {
+                this.cursorPosition[1] -= 1;
+                this.handleMoveCursor();
+            }
+        } else {
+            if (this.cursorPosition[1] < 7) {
+                this.cursorPosition[1] += 1;
+                this.handleMoveCursor();
+            }
         }
     }
 
     handleUp() {
-        if (cursorPosition[1] < 7) {
-            cursorPosition[1] += 1;
-            this.handleMove();
+        if (this.turn === Colors.white) {
+            if (this.cursorPosition[1] < 7) {
+                this.cursorPosition[1] += 1;
+                this.handleMoveCursor();
+            }
+        } else {
+            if (this.cursorPosition[1] > 0) {
+                this.cursorPosition[1] -= 1;
+                this.handleMoveCursor();
+            }
         }
     }
 
-    handleMove() {
-        if (this.selectedPiece === null) {
-
-        } else {
-
-        }
+    handleMoveCursor() {
+        console.log(this.cursorPosition);
         this.moveSound();
         this.draw();
     }
 
     draw() {
+        console.log("draw");
         var otherColor = (this.turn === Colors.white) ? Colors.black : Colors.white;
         var threatenedPositions = this.board.getThreatenedPositions(otherColor);
         var emphasizedThreatenedPositions = this.board.getEmphasizedThreatenedPositions(otherColor);
+
+        var grid = [];
+        for (var i = 0; i < 8; i++) {
+            var row = [];
+            for (var j = 0; j < 8; j++) {
+                row.push(new Grid(i, j, this.turn !== Colors.white));
+            }
+            grid.push(row);
+        }
+
+        this.board.pieces.forEach(p => {
+            grid[p.x][p.y].piece = p.getAsset();
+        });
+
+        threatenedPositions.forEach(p => {
+            grid[p[0]][p[1]].threatened = true;
+        });
+        emphasizedThreatenedPositions.forEach(p => {
+            grid[p[0]][p[1]].threatened2 = true;
+        });
+
+        grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
+        if (this.selectedPiece !== null) {
+            grid[this.selectedPiece.x][this.selectedPiece.y].selection = true;
+            this.legalMoves.forEach(p => {
+                grid[p[0]][p[1]].movement = true;
+            });
+        }
+        var svg = d3.select("#board");
+        svg.selectAll('*').remove();
+        grid.forEach(row => {
+            row.forEach(x => x.draw(svg));
+        });
+    }
+}
+
+class Grid {
+    // class for rendering a grid in the chess board
+    constructor(x, y, flipped) {
+        this.piece = null;
+        this.selection = false;
+        this.threatened = false;
+        this.threatened2 = false;
+        this.movement = false;
+        this.x = x;
+        this.y = y;
+        this.flipped = flipped;
+    }
+
+    draw(svg) {
+        var gridSize = ScalingFactor * AssetSize;
+        // starting position for cursor - top left of box
+        var posX;
+        var posY;
+        if (!this.flipped) {
+            // A1 is bottom left
+            posX = this.x * gridSize;
+            posY = (7 - this.y) * gridSize;
+        } else {
+            // A1 is top right
+            posX = (7 - this.x) * gridSize;
+            posY = this.y * gridSize;
+        }
+        var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
+        svg.append("rect")
+            .attr("width", gridSize)
+            .attr("height", gridSize)
+            .attr("transform", `translate(${posX} ${posY})`)
+            .attr("fill", color);
+        svg.append("image")
+            .attr("transform", `translate(${posX} ${posY}) scale(${ScalingFactor})`)
+            .attr("xlink:href", `./${this.piece}.gif`);
     }
 }

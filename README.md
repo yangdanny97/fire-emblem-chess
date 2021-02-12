@@ -1,5 +1,5 @@
 # fire-emblem-chess
-A Fire Emblem themed chess game in your browser
+A Fire Emblem themed, local, browser based chess game.
 
 ## Intro
 
@@ -26,6 +26,14 @@ Coming Soon
 ### Why didn't I use one of the many existing chess libraries?
 
 I wasn't sure how to extract the necessary data to display which squares are threatened by an enemy piece and keep it updated as the cursor moves, so I figured it wouldn't be too hard to just write a chess library myself. Back when I TA'ed a functional programming class in college, a few students submitted terminal-based chess games as their final projects, so I thought it could be fun to build one myself. That said, this project isn't written completely in a functional style, although it might be fun to migrate everything to Reason one day.
+
+### Why is everything in a single JS file?
+
+I learned Javascript in the JQuery days before all the advanced features were added, so I never figured out how dependency management works. In fact, this is my first time using classes in JS. Feel free to refactor and move things to separate files.
+
+### Why do I use D3 to render things instead of ___?
+
+D3 is normally supposed to be used for dynamic & interactive data visualizations, so it definitely feels weird to use it for a game. One reason is it's the library I'm most familiar with, and I quite like using it. The other reason is that D3 is a really powerful library that is good for interactive graphics, and simple games like chess are just visualizations of the board state - when viewed that way, it's actually surprisingly suitable for the task.
 
 ### Some other cool feature ideas
 I have some ideas on customizability that I didn't implement because I didn't want to increase the scope of the project too much for V1. I also didn't want to cause confusion over which unit is which piece, and the current units are selected to be easy to identify and differentiate, even for people who don't know about Fire Emblem.
