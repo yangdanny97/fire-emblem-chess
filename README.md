@@ -1,7 +1,7 @@
 # fire-emblem-chess
 A Fire Emblem themed, local, browser based chess game.
 
-![screenshot](https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png){: height="px400" width="400"}
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png" width="400" height="400" />
 
 ## Intro
 
@@ -26,14 +26,15 @@ Pressing X on an enemy unit will show which squares it can move to, attack, or d
 ### Movement and Cover Highlighting
 When a unit is selected, undefended squares that it may move to/capture will be highlighted in blue. Squares that it may move to/capture that are covered by enemy units are highlighted in purple. While you are in check, your king will be highlighted in red.
 
-![screenshot](https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/movement.png){: height="px400" width="400"}
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/movement.png" width="400" height="400" />
 
 Units which are threatened or defended by enemy units are highlighted in pink. You may also select an enemy unit to show all the squares that it threatens/defends (including empty squares).
 
 This feature makes it easy to visualize threats and identify hanging pieces. In the below screenshots, the black pawn on B5 is hanging, while the pawn on H5 is defended. The bishop on C4 is threatened by the pawn on B5.
 
-![screenshot](https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging.png){: height="px400" width="400"}
-![screenshot](https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging2.png){: height="px400" width="400"}
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging.png" width="400" height="400" />
+
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging2.png" width="400" height="400" />
 
 ### Pieces
 I edited sprites from the Fire Emblem GBA games to represent each chess piece. For reference, the mapping is shown below:
@@ -71,6 +72,6 @@ I have some ideas on customizability that I didn't implement because I didn't wa
 - repetition stalemates
 
 ### TODO
-- general styling of the webpage outside of the chess board 
-- notifications for turn start, check, checkmate, etc.
-- 
+- general styling of the webpage outside of the chess board
+- notifications/banners for turn start, check, checkmate, etc.
+- optimize the rendering to properly use D3's data joins
