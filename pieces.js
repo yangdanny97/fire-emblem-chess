@@ -16,7 +16,7 @@ class Piece {
         this.x = x;
         this.y = y;
         this.hasMoved = false;
-        this.emphasizeThreatenRange = false;
+        this.emphasizeCoverRange = false;
     }
 
     handleMove(board, position) {
@@ -24,11 +24,20 @@ class Piece {
         return null;
     }
 
-    threatenedPositionHelper(board, positions, pos) {
+    canCover(board, pos) {
+        var piece = board.getPiece(pos[0], pos[1]);
         if (
-            board.checkUnobstructed(this, pos) ||
-            board.hasPiece(pos[0], pos[1], this.color)
+            piece !== null && 
+            (piece.color === this.color || piece instanceof King)
         ) {
+            // defend or check
+            return true;
+        }
+        return board.checkUnobstructed(this, pos);
+    }
+
+    linearCoverHelper(board, positions, pos) {
+        if (this.canCover(board, pos)) {
             positions.push(pos);
         } else {
             return false;
@@ -46,7 +55,7 @@ class Piece {
         while (x < 7 && y < 7) {
             x += 1;
             y += 1;
-            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
+            if (!this.linearCoverHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -55,7 +64,7 @@ class Piece {
         while (x < 7 && y > 0) {
             x += 1;
             y -= 1;
-            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
+            if (!this.linearCoverHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -64,7 +73,7 @@ class Piece {
         while (x > 0 && y < 7) {
             x -= 1;
             y += 1;
-            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
+            if (!this.linearCoverHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -73,7 +82,7 @@ class Piece {
         while (x > 0 && y > 0) {
             x -= 1;
             y -= 1;
-            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
+            if (!this.linearCoverHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -83,22 +92,22 @@ class Piece {
     getUnobstructedCardinalPositions(board) {
         var positions = [];
         for (var i = this.x + 1; i <= 7; i++) {
-            if (!this.threatenedPositionHelper(board, positions, [i, this.y])) {
+            if (!this.linearCoverHelper(board, positions, [i, this.y])) {
                 break;
             }
         }
         for (var i = this.x - 1; i >= 0; i--) {
-            if (!this.threatenedPositionHelper(board, positions, [i, this.y])) {
+            if (!this.linearCoverHelper(board, positions, [i, this.y])) {
                 break;
             }
         }
         for (var i = this.y + 1; i <= 7; i++) {
-            if (!this.threatenedPositionHelper(board, positions, [this.x, i])) {
+            if (!this.linearCoverHelper(board, positions, [this.x, i])) {
                 break;
             }
         }
         for (var i = this.y - 1; i >= 0; i--) {
-            if (!this.threatenedPositionHelper(board, positions, [this.x, i])) {
+            if (!this.linearCoverHelper(board, positions, [this.x, i])) {
                 break;
             }
         }
@@ -115,7 +124,7 @@ class Pawn extends Piece {
     // ie: positions that an opposing king cannot move to
     // includes defended friendly pieces
     // accounts for obstruction but not discovery
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         var positions = [];
         var pos;
         if (this.x > 0) {
@@ -124,10 +133,7 @@ class Pawn extends Piece {
             } else {
                 pos = [this.x - 1, this.y - 1];
             }
-            if (
-                board.checkUnobstructed(this, pos) ||
-                board.hasPiece(pos[0], pos[1], this.color)
-            ) {
+            if (this.canCover(board, pos)) {
                 positions.push(pos);
             }
         }
@@ -138,10 +144,7 @@ class Pawn extends Piece {
             } else {
                 pos = [this.x + 1, this.y - 1];
             }
-            if (
-                board.checkUnobstructed(this, pos) ||
-                board.hasPiece(pos[0], pos[1], this.color)
-            ) {
+            if (this.canCover(board, pos)) {
                 positions.push(pos);
             }
         }
@@ -165,7 +168,7 @@ class Pawn extends Piece {
             }
         }
         // capture
-        this.getThreatenedPositions(board).forEach(p => {
+        this.getCoveredPositions(board).forEach(p => {
             if (board.hasOppositeColorPiece(this, p[0], p[1])) {
                 // regular capture
                 positions.push(p);
@@ -180,7 +183,7 @@ class Pawn extends Piece {
                 }
             }
         });
-        return positions.filter(p => board.validateBoardStateForMove(this, p));
+        return positions.filter(p => board.validBoardStateForMove(this, p));
     }
 
     // expects a legal move
@@ -216,7 +219,7 @@ class King extends Piece {
         this.checkMated = false;
     }
 
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         var positions = [
             [this.x - 1, this.y],
             [this.x - 1, this.y - 1],
@@ -227,17 +230,13 @@ class King extends Piece {
             [this.x + 1, this.y - 1],
             [this.x + 1, this.y + 1]
         ];
-        return positions.filter(
-            p => board.checkUnobstructed(this, p) ||
-            board.hasPiece(p[0], p[1], this.color)
-        );
+        return positions.filter(p => this.canCover(board, p));
     }
 
     getLegalMoves(board) {
-        var positions = this.getThreatenedPositions(board)
+        var positions = this.getCoveredPositions(board)
             .filter(p =>
-                board.validateBoardStateForMove(this, p) &&
-                board.checkUnobstructed(this, p)
+                board.validBoardStateForMove(this, p)
             );
         // castling
         if (!this.hasMoved && !this.inCheck) {
@@ -255,9 +254,9 @@ class King extends Piece {
                     !board.hasPiece(2, y) &&
                     !board.hasPiece(3, y) &&
                     // cannot move through check
-                    board.validateBoardStateForMove(this, [3, y]) &&
-                    board.validateBoardStateForMove(this, [2, y]) &&
-                    board.validateBoardStateForMove(this, [2, y], leftRook, [3, y])
+                    board.validBoardStateForMove(this, [3, y]) &&
+                    board.validBoardStateForMove(this, [2, y]) &&
+                    board.validBoardStateForMove(this, [2, y], leftRook, [3, y])
                 ) {
                     positions.push([2, y]);
                 }
@@ -272,9 +271,9 @@ class King extends Piece {
                 if (
                     !board.hasPiece(5, y) &&
                     !board.hasPiece(6, y) &&
-                    board.validateBoardStateForMove(this, [5, y]) &&
-                    board.validateBoardStateForMove(this, [6, y]) &&
-                    board.validateBoardStateForMove(this, [6, y], rightRook, [5, y])
+                    board.validBoardStateForMove(this, [5, y]) &&
+                    board.validBoardStateForMove(this, [6, y]) &&
+                    board.validBoardStateForMove(this, [6, y], rightRook, [5, y])
                 ) {
                     positions.push([6, y]);
                 }
@@ -306,16 +305,15 @@ class King extends Piece {
 }
 
 class Queen extends Piece {
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         return this.getUnobstructedCardinalPositions(board)
             .concat(this.getUnobstructedDiagonalPositions(board));
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedPositions(board)
+        return this.getCoveredPositions(board)
             .filter(p =>
-                board.validateBoardStateForMove(this, p) &&
-                board.checkUnobstructed(this, p)
+                board.validBoardStateForMove(this, p)
             );
     }
 
@@ -325,15 +323,14 @@ class Queen extends Piece {
 }
 
 class Bishop extends Piece {
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         return this.getUnobstructedDiagonalPositions(board)
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedPositions(board)
+        return this.getCoveredPositions(board)
             .filter(p =>
-                board.validateBoardStateForMove(this, p) &&
-                board.checkUnobstructed(this, p)
+                board.validBoardStateForMove(this, p)
             );
     }
 
@@ -343,7 +340,7 @@ class Bishop extends Piece {
 }
 
 class Knight extends Piece {
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         var positions = [
             [this.x - 2, this.y - 1],
             [this.x - 2, this.y + 1],
@@ -354,17 +351,13 @@ class Knight extends Piece {
             [this.x + 2, this.y - 1],
             [this.x + 2, this.y + 1]
         ];
-        return positions.filter(p =>
-            board.checkUnobstructed(this, p) ||
-            board.hasPiece(p[0], p[1], this.color)
-        );
+        return positions.filter(p => this.canCover(board, p));
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedPositions(board)
+        return this.getCoveredPositions(board)
             .filter(p =>
-                board.validateBoardStateForMove(this, p) &&
-                board.checkUnobstructed(this, p)
+                board.validBoardStateForMove(this, p)
             );
     }
 
@@ -374,15 +367,14 @@ class Knight extends Piece {
 }
 
 class Rook extends Piece {
-    getThreatenedPositions(board) {
+    getCoveredPositions(board) {
         return this.getUnobstructedCardinalPositions(board);
     }
 
     getLegalMoves(board) {
-        return this.getThreatenedPositions(board)
+        return this.getCoveredPositions(board)
             .filter(p =>
-                board.validateBoardStateForMove(this, p) &&
-                board.checkUnobstructed(this, p)
+                board.validBoardStateForMove(this, p)
             );
     }
 

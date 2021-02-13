@@ -116,26 +116,30 @@ class Game {
     }
 
     handleTurnStart() {
+        this.selectedPiece = null;
+        this.legalMoves = null;
         var color = this.turn;
         // make sure player is not checkmated
         var otherColor = oppositeColor(color);
         var ownKing = this.board.pieces.filter(
             p => p.color === color && p instanceof King
         )[0];
-        var otherThreatenedPositions = this.board.getThreatenedPositions(otherColor);
-        var ownKingInCheck = otherThreatenedPositions
+        var otherCoveredPositions = this.board.getCoveredPositions(otherColor);
+        var ownKingInCheck = otherCoveredPositions
             .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
         if (ownKingInCheck) {
             var legalMoves = this.board.pieces.filter(
                 p => p.color === color
             ).reduce((acc, p) => acc + p.getLegalMoves(this.board).length, 0);
-            if (legalMoves.length === 0) {
-                alert(`${otherColor} won by checkmate!`);
+            if (legalMoves === 0) {
+                // lock the game for now
                 this.winSound();
+                this.lock = true;
                 return;
             }
         }
         this.turnStartSound();
+        this.draw();
     }
 
     winSound() {
@@ -175,8 +179,8 @@ class Game {
         if (this.selectedPiece === null) {
             // no piece selected
             var piece = this.board.getPiece(
-                this.cursorPosition[0], 
-                this.cursorPosition[1], 
+                this.cursorPosition[0],
+                this.cursorPosition[1],
             );
             if (piece === null) {
                 // select nothing
@@ -188,21 +192,21 @@ class Game {
                 this.successSound();
                 this.draw();
             } else {
-                // select enemy piece - toggle threaten range highlight
-                piece.emphasizeThreatenRange = !piece.emphasizeThreatenRange;
+                // select enemy piece - toggle cover range highlight
+                piece.emphasizeCoverRange = !piece.emphasizeCoverRange;
                 this.successSound();
                 this.draw();
             }
         } else {
             // friendly piece already selected
             var target_piece = this.board.getPiece(
-                this.cursorPosition[0], 
-                this.cursorPosition[1], 
+                this.cursorPosition[0],
+                this.cursorPosition[1],
             );
             if (target_piece === null || target_piece.color !== this.turn) {
                 // select empty space or enemy piece - try to move
-                var legalMove = this.legalMoves.filter(m => 
-                    m[0] === this.cursorPosition[0] && 
+                var legalMove = this.legalMoves.filter(m =>
+                    m[0] === this.cursorPosition[0] &&
                     m[1] === this.cursorPosition[1]
                 );
                 if (legalMove.length > 0) {
@@ -216,12 +220,9 @@ class Game {
                         this.moveSound();
                     }
                     this.draw();
-                    this.turn = oppositeColor(this.turn);
-                    this.selectedPiece = null;
-                    this.legalMoves = null;
                     setTimeout(() => {
                         this.lock = false;
-                        this.draw();
+                        this.turn = oppositeColor(this.turn);
                         this.handleTurnStart();
                     }, 1000);
                 } else {
@@ -230,7 +231,7 @@ class Game {
             } else {
                 // select different friendly piece
                 if (
-                    this.cursorPosition[0] !== this.selectedPiece.x || 
+                    this.cursorPosition[0] !== this.selectedPiece.x ||
                     this.cursorPosition[1] !== this.selectedPiece.y
                 ) {
                     this.selectedPiece = target_piece;
@@ -321,14 +322,14 @@ class Game {
 
     draw() {
         var otherColor = oppositeColor(this.turn);
-        var threatenedPositions = this.board.getThreatenedPositions(otherColor);
-        var emphasizedThreatenedPositions = this.board.getEmphasizedThreatenedPositions(otherColor);
+        var coveredPositions = this.board.getCoveredPositions(otherColor);
+        var emphasizedCoveredPositions = this.board.getEmphasizedCoveredPositions(otherColor);
 
         var grid = [];
         for (var i = 0; i < 8; i++) {
             var row = [];
             for (var j = 0; j < 8; j++) {
-                row.push(new Grid(i, j, this.turn !== Colors.white));
+                row.push(new Grid(i, j, this.turn));
             }
             grid.push(row);
         }
@@ -337,11 +338,11 @@ class Game {
             grid[p.x][p.y].piece = p;
         });
 
-        threatenedPositions.forEach(p => {
-            grid[p[0]][p[1]].threatened = true;
+        coveredPositions.forEach(p => {
+            grid[p[0]][p[1]].covered = true;
         });
-        emphasizedThreatenedPositions.forEach(p => {
-            grid[p[0]][p[1]].threatened2 = true;
+        emphasizedCoveredPositions.forEach(p => {
+            grid[p[0]][p[1]].covered2 = true;
         });
 
         grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
@@ -361,15 +362,15 @@ class Game {
 
 class Grid {
     // class for rendering a grid in the chess board
-    constructor(x, y, isBlackTurn) {
+    constructor(x, y, turnColor) {
         this.piece = null;
         this.selection = false;
-        this.threatened = false;
-        this.threatened2 = false;
+        this.covered = false;
+        this.covered2 = false;
         this.movement = false;
         this.x = x;
         this.y = y;
-        this.isBlackTurn = isBlackTurn;
+        this.turnColor = turnColor;
     }
 
     draw(svg) {
@@ -377,7 +378,7 @@ class Grid {
         // starting position for cursor - top left of box
         var posX;
         var posY;
-        if (!this.isBlackTurn) {
+        if (this.turnColor === Colors.white) {
             // A1 is bottom left
             posX = this.x * gridSize;
             posY = (7 - this.y) * gridSize;
@@ -388,53 +389,61 @@ class Grid {
         }
         var g = svg.append("g")
             .attr("class", positionToId(this.x, this.y));
+
+        // draw base square
+        var inCheck = this.piece !== null && this.piece instanceof King && 
+            this.piece.color === this.turnColor && this.covered;
         var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
         g.append("rect")
-        .attr("width", gridSize)
-        .attr("height", gridSize)
-        .attr("transform", `translate(${posX} ${posY})`)
-        .attr("fill", color);
-        if (this.threatened2 && !this.movement) {
-            g.append("rect")
             .attr("width", gridSize)
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", "red")
-            .style("opacity", 0.8);
-        } else if (this.threatened) {
-            g.append("rect")
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", "lightcoral")
-            .style("opacity", 0.8);
+            .attr("fill", inCheck ? "red" : color);
+        
+        // draw overlay (movement and cover)
+        var overlayColor = null;
+        if (this.covered2 && !this.movement && !inCheck) {
+            overlayColor = "red";
+        } else if (
+            this.covered && this.piece !== null && 
+            !inCheck && !this.movement
+        ) {
+            overlayColor = "lightcoral";
+        } else if (this.movement && this.covered) {
+            overlayColor = "purple";
+        } else if (this.movement) {
+            overlayColor = "blue";
         }
-        if (this.movement) {
+        if (overlayColor !== null) {
             g.append("rect")
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", "blue")
-            .style("opacity", 0.8);
+                .attr("width", gridSize)
+                .attr("height", gridSize)
+                .attr("transform", `translate(${posX} ${posY})`)
+                .attr("fill", overlayColor)
+                .style("opacity", 0.8);
         }
+
+        // sprite
         if (this.piece !== null) {
             g.append("image")
-            .attr("transform", `translate(${posX} ${posY})`)
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .attr("id", positionToId(this.x, this.y))
-            .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
+                .attr("transform", `translate(${posX} ${posY})`)
+                .attr("width", gridSize)
+                .attr("height", gridSize)
+                .attr("id", positionToId(this.x, this.y))
+                .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
         }
+
+        // selection box
         if (this.selection) {
             var stroke = ScalingFactor * 3;
             g.append("rect")
-            .attr("width", gridSize - stroke)
-            .attr("height", gridSize - stroke)
-            .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
-            .attr("fill", "none")
-            .attr("stroke-width", `${stroke}px`)
-            .attr("class", "selection")
-            .attr("stroke", "goldenrod");  
+                .attr("width", gridSize - stroke)
+                .attr("height", gridSize - stroke)
+                .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
+                .attr("fill", "none")
+                .attr("stroke-width", `${stroke}px`)
+                .attr("class", "selection")
+                .attr("stroke", "goldenrod");
         }
     }
 }

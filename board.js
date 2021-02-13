@@ -35,7 +35,7 @@ class Board {
             var targetPiece = this.getPiece(end[0], end[1]);
             // cannot capture own piece or king
             if (
-                targetPiece !== null && 
+                targetPiece !== null &&
                 (targetPiece.color === piece.color || targetPiece instanceof King)
             ) {
                 return false;
@@ -50,41 +50,40 @@ class Board {
 
     // determine if board state is legal if [piece] is in [position]
     // [piece2] and [position2] are used for the rook, when castling
-    validateBoardStateForMove(piece, position, piece2 = null, position2 = null) {
+    validBoardStateForMove(piece, position, piece2 = null, position2 = null) {
         var xi = piece.x,
             yi = piece.y;
-        piece.x = position[0];
-        piece.y = position[1];
+        if (this.hasPiece(position[0], position[1], piece.color)) {
+            return false;
+        }
+        if (piece2 !== null && this.hasPiece(position2[0], position2[1], piece2.color)) {
+            return false
+        }
         // any piece at the destination position will be captured
         var pieces = this.pieces.filter(p => {
-            if (p.x === piece.x && p.y === piece.y) {
-                return false;
-            }
-            if (p.x === xi && p.y === yi) {
+            if (p.x === position[0] && p.y === position[1]) {
                 return false;
             }
             return true;
         });
-        pieces.push(piece);
+        piece.x = position[0];
+        piece.y = position[1];
+
         if (piece2 !== null) {
             var xi2 = piece2.x,
                 yi2 = piece2.y;
-            piece2.x = position2[0];
-            piece2.y = position2[1];
             pieces = pieces.filter(p => {
-                if (p.x === piece2.x && p.y === piece2.y) {
-                    return false;
-                }
-                if (p.x === xi2 && p.y === yi2) {
+                if (p.x === position2[0] && p.y === position2[1]) {
                     return false;
                 }
                 return true;
             });
-            pieces.push(piece2);
+            piece2.x = position2[0];
+            piece2.y = position2[1];
         }
         var newBoard = new Board(pieces);
         // resulting position cannot cause own king to be in check
-        var result = newBoard.validateBoard(piece.color);
+        var result = newBoard.validBoard(piece.color);
         piece.x = xi;
         piece.y = yi;
         if (piece2 !== null) {
@@ -115,48 +114,48 @@ class Board {
         }
     }
 
-    // validates check
-    validateBoard(movedColor) {
+    // players cannot leave their own king in check
+    validBoard(movedColor) {
         var otherColor = oppositeColor(movedColor);
         var ownKing = this.pieces.filter(
             p => p.color === movedColor && p instanceof King
         )[0];
-        var otherThreatenedPositions = this.getThreatenedPositions(otherColor);
-        
-        var ownKingInCheck = otherThreatenedPositions
+        var otherCoveredPositions = this.getCoveredPositions(otherColor);
+
+        var ownKingInCheck = otherCoveredPositions
             .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
         return !ownKingInCheck;
     }
 
-    threatenedPositionsHelper(pieces) {
-        return pieces.reduce((acc, p) => acc.concat(p.getThreatenedPositions(this)), [])
-        .sort((a, b) => {
-            if (a[0] === b[0]) {
-                return a[1] - b[1];
-            }
-            return a[0] - b[0];
-        })
-        .reduce((acc, pos) => {
-            if (acc.length > 0 &&
-                pos[0] === acc[acc.length - 1][0] &&
-                pos[1] === acc[acc.length - 1][1]
-            ) {
+    coveredPositionsHelper(pieces) {
+        return pieces.reduce((acc, p) => acc.concat(p.getCoveredPositions(this)), [])
+            .sort((a, b) => {
+                if (a[0] === b[0]) {
+                    return a[1] - b[1];
+                }
+                return a[0] - b[0];
+            })
+            .reduce((acc, pos) => {
+                if (acc.length > 0 &&
+                    pos[0] === acc[acc.length - 1][0] &&
+                    pos[1] === acc[acc.length - 1][1]
+                ) {
+                    return acc;
+                }
+                acc.push(pos);
                 return acc;
-            }
-            acc.push(pos);
-            return acc;
-        }, []);
+            }, []);
     }
 
-    getThreatenedPositions(color) {
-        return this.threatenedPositionsHelper(
+    getCoveredPositions(color) {
+        return this.coveredPositionsHelper(
             this.pieces.filter(p => p.color === color)
         );
     }
 
-    getEmphasizedThreatenedPositions(color) {
-        return this.threatenedPositionsHelper(
-            this.pieces.filter(p => p.color === color && p.emphasizeThreatenRange)
+    getEmphasizedCoveredPositions(color) {
+        return this.coveredPositionsHelper(
+            this.pieces.filter(p => p.color === color && p.emphasizeCoverRange)
         );
     }
 }
