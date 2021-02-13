@@ -1,15 +1,15 @@
 # fire-emblem-chess
-A Fire Emblem themed, local, browser based chess game.
+A Fire Emblem themed, local, browser based chess game. ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png" width="400" height="400" />
 
-## Intro
+## Intro ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/bishop.gif)
 
 Fire Emblem is one of my favorite video game series, so I thought it would be cool to whip up a version of chess where the visuals, sounds, and interface are reminiscent of Fire Emblem. Gameplay-wise this is exactly the same as chess, and all the pieces work as you would expect chess pieces to work.
 
 This game is designed to be played on a single computer, passed back and forth between players. The board orientation will flip depending on whose turn it is.
 
-## How to Play
+## How to Play ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/rook.gif)
 Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/)
 
 ### Controls
@@ -21,7 +21,7 @@ Pressing X on one of your units will display which squares it can move to. Movin
 
 Pressing X on an enemy unit will show which squares it can move to, attack, or defend. You can toggle this off by pressing X again.
 
-## Features
+## Features ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/pawn.gif)
 
 ### Movement and Cover Highlighting
 When a unit is selected, undefended squares that it may move to/capture will be highlighted in blue. Squares that it may move to/capture that are covered by enemy units are highlighted in purple. While you are in check, your king will be highlighted in red.
@@ -32,9 +32,8 @@ Units which are threatened or defended by enemy units are highlighted in pink. Y
 
 This feature makes it easy to visualize threats and identify hanging pieces. In the below screenshots, the black pawn on B5 is hanging, while the pawn on H5 is defended. The bishop on C4 is threatened by the pawn on B5.
 
-<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging.png" width="400" height="400" />
-
-<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging2.png" width="400" height="400" />
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging.png" width="300" height="300" />
+<img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging2.png" width="300" height="300" />
 
 ### Pieces
 I edited sprites from the Fire Emblem GBA games to represent each chess piece. For reference, the mapping is shown below:
@@ -51,7 +50,7 @@ I edited sprites from the Fire Emblem GBA games to represent each chess piece. F
 ### Sounds
 I used sounds from the GBA games and Fire Emblem Heroes.
 
-## Dev Notes
+## Dev Notes ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/king.gif)
 
 ### Why didn't I use one of the many existing chess libraries?
 
