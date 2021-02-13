@@ -6,6 +6,10 @@ const Colors = {
 const ScalingFactor = 4;
 const AssetSize = 23;
 
+function oppositeColor(color) {
+    return color === Colors.white ? Colors.black : Colors.white;
+}
+
 class Piece {
     constructor(color, x, y) {
         this.color = color;
@@ -15,23 +19,34 @@ class Piece {
         this.emphasizeThreatenRange = false;
     }
 
-    handleMove(position) {
+    handleMove(board, position) {
         this.hasMoved = true;
+        return null;
+    }
+
+    threatenedPositionHelper(board, positions, pos) {
+        if (
+            board.checkUnobstructed(this, pos) ||
+            board.hasPiece(pos[0], pos[1], this.color)
+        ) {
+            positions.push(pos);
+        } else {
+            return false;
+        }
+        if (board.hasPiece(pos[0], pos[1])) {
+            return false;
+        }
+        return true;
     }
 
     getUnobstructedDiagonalPositions(board) {
         var positions = [];
-        var x = this.x, y = this.y;
+        var x = this.x,
+            y = this.y;
         while (x < 7 && y < 7) {
             x += 1;
             y += 1;
-            var pos = [x, y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -40,13 +55,7 @@ class Piece {
         while (x < 7 && y > 0) {
             x += 1;
             y -= 1;
-            var pos = [x, y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -55,13 +64,7 @@ class Piece {
         while (x > 0 && y < 7) {
             x -= 1;
             y += 1;
-            var pos = [x, y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -70,13 +73,7 @@ class Piece {
         while (x > 0 && y > 0) {
             x -= 1;
             y -= 1;
-            var pos = [x, y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [x, y])) {
                 break;
             }
         }
@@ -86,46 +83,22 @@ class Piece {
     getUnobstructedCardinalPositions(board) {
         var positions = [];
         for (var i = this.x + 1; i <= 7; i++) {
-            var pos = [i, this.y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [i, this.y])) {
                 break;
             }
         }
         for (var i = this.x - 1; i >= 0; i--) {
-            var pos = [i, this.y];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [i, this.y])) {
                 break;
             }
         }
         for (var i = this.y + 1; i <= 7; i++) {
-            var pos = [this.x, i];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [this.x, i])) {
                 break;
             }
         }
         for (var i = this.y - 1; i >= 0; i--) {
-            var pos = [this.x, i];
-            if (board.checkUnobstructed(this, pos)) {
-                positions.push(pos);
-            } else {
-                break;
-            }
-            if (board.checkUnobstructed(this, pos, false)) {
+            if (!this.threatenedPositionHelper(board, positions, [this.x, i])) {
                 break;
             }
         }
@@ -139,7 +112,8 @@ class Pawn extends Piece {
         this.hasJustMoved2Spaces = false;
     }
 
-    // ie: unoccupied positions that an opposing king cannot move to
+    // ie: positions that an opposing king cannot move to
+    // includes defended friendly pieces
     // accounts for obstruction but not discovery
     getThreatenedPositions(board) {
         var positions = [];
@@ -150,7 +124,10 @@ class Pawn extends Piece {
             } else {
                 pos = [this.x - 1, this.y - 1];
             }
-            if (board.checkUnobstructed(this, pos)) {
+            if (
+                board.checkUnobstructed(this, pos) ||
+                board.hasPiece(pos[0], pos[1], this.color)
+            ) {
                 positions.push(pos);
             }
         }
@@ -161,7 +138,10 @@ class Pawn extends Piece {
             } else {
                 pos = [this.x + 1, this.y - 1];
             }
-            if (board.checkUnobstructed(this, pos)) {
+            if (
+                board.checkUnobstructed(this, pos) ||
+                board.hasPiece(pos[0], pos[1], this.color)
+            ) {
                 positions.push(pos);
             }
         }
@@ -190,11 +170,12 @@ class Pawn extends Piece {
                 // regular capture
                 positions.push(p);
             } else if (
-                board.hasOppositeColorPiece(this, p[0], this.y)
+                board.hasOppositeColorPiece(this, p[0], this.y) &&
+                board.checkUnobstructed(this, p, false)
             ) {
                 // en passant - check horizontally adjacent pieces
                 var piece = board.getPiece(p[0], this.y);
-                if (piece instanceof Pawn && piece.hasJustMoved2Spaces()) {
+                if (piece instanceof Pawn && piece.hasJustMoved2Spaces) {
                     positions.push(p);
                 }
             }
@@ -203,16 +184,28 @@ class Pawn extends Piece {
     }
 
     // expects a legal move
-    handleMove(position) {
-        var y = position[1];
-        if (Math.abs(this.y - y) === 2) {
-            this.hasJustMoved2Spaces = true;
-        }
+    handleMove(board, position) {
+        this.hasJustMoved2Spaces = Math.abs(this.y - position[1]) === 2;
         this.hasMoved = true;
+        var callback = null;
+        if (
+            this.x !== position[0] &&
+            this.y !== position[1] &&
+            !board.hasPiece(position[0], position[1])
+        ) {
+            // handle en-passant
+            var enemyPos = [position[0], this.y];
+            callback = b => {
+                b.pieces = b.pieces.filter(
+                    p => p.x !== enemyPos[0] || p.y !== enemyPos[1]
+                );
+            };
+        }
+        return callback;
     }
 
     getAsset() {
-        return `sprites/${this.color}/pawn`;
+        return `assets/${this.color}/pawn`;
     }
 }
 
@@ -234,30 +227,36 @@ class King extends Piece {
             [this.x + 1, this.y - 1],
             [this.x + 1, this.y + 1]
         ];
-        return positions.filter(p => board.checkUnobstructed(this, p));
+        return positions.filter(
+            p => board.checkUnobstructed(this, p) ||
+            board.hasPiece(p[0], p[1], this.color)
+        );
     }
 
     getLegalMoves(board) {
         var positions = this.getThreatenedPositions(board)
-            .filter(p => board.validateBoardStateForMove(this, p));
+            .filter(p =>
+                board.validateBoardStateForMove(this, p) &&
+                board.checkUnobstructed(this, p)
+            );
         // castling
         if (!this.hasMoved && !this.inCheck) {
             var y = (this.color === Colors.white) ? 0 : 7;
             var leftRook = board.getPiece(0, y);
             if (leftRook !== null &&
                 leftRook instanceof Rook &&
-                leftRook.color === this.color && 
+                leftRook.color === this.color &&
                 !leftRook.hasMoved
             ) {
                 // queen-side
                 if (
                     // no intervening pieces
-                    !board.hasPiece(1, y) && 
-                    !board.hasPiece(2, y) && 
-                    !board.hasPiece(3, y) && 
+                    !board.hasPiece(1, y) &&
+                    !board.hasPiece(2, y) &&
+                    !board.hasPiece(3, y) &&
                     // cannot move through check
-                    board.validateBoardStateForMove(this, [3, y]) && 
-                    board.validateBoardStateForMove(this, [2, y]) && 
+                    board.validateBoardStateForMove(this, [3, y]) &&
+                    board.validateBoardStateForMove(this, [2, y]) &&
                     board.validateBoardStateForMove(this, [2, y], leftRook, [3, y])
                 ) {
                     positions.push([2, y]);
@@ -271,10 +270,10 @@ class King extends Piece {
             ) {
                 // king-side
                 if (
-                    !board.hasPiece(5, y) && 
-                    !board.hasPiece(6, y) && 
-                    board.validateBoardStateForMove(this, [5, y]) && 
-                    board.validateBoardStateForMove(this, [6, y]) && 
+                    !board.hasPiece(5, y) &&
+                    !board.hasPiece(6, y) &&
+                    board.validateBoardStateForMove(this, [5, y]) &&
+                    board.validateBoardStateForMove(this, [6, y]) &&
                     board.validateBoardStateForMove(this, [6, y], rightRook, [5, y])
                 ) {
                     positions.push([6, y]);
@@ -284,8 +283,25 @@ class King extends Piece {
         return positions;
     }
 
+    handleMove(board, position) {
+        var callback = null;
+        var y = (this.color === Colors.white) ? 0 : 7;
+        // move rook for castling
+        if (!this.hasMoved) {
+            if (position[0] === 2 && position[1] === y) {
+                var rook = board.getPiece(0, y);
+                callback = b => b.confirmMove(rook, [3, y]);
+            } else if (position[0] === 6 && position[1] === y) {
+                var rook = board.getPiece(7, y);
+                callback = b => b.confirmMove(rook, [5, y]);
+            }
+        }
+        this.hasMoved = true;
+        return callback;
+    }
+
     getAsset() {
-        return `sprites/${this.color}/king`;
+        return `assets/${this.color}/king`;
     }
 }
 
@@ -297,11 +313,14 @@ class Queen extends Piece {
 
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
-            .filter(p => board.validateBoardStateForMove(this, p));
+            .filter(p =>
+                board.validateBoardStateForMove(this, p) &&
+                board.checkUnobstructed(this, p)
+            );
     }
 
     getAsset() {
-        return `sprites/${this.color}/queen`;
+        return `assets/${this.color}/queen`;
     }
 }
 
@@ -312,11 +331,14 @@ class Bishop extends Piece {
 
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
-            .filter(p => board.validateBoardStateForMove(this, p));
+            .filter(p =>
+                board.validateBoardStateForMove(this, p) &&
+                board.checkUnobstructed(this, p)
+            );
     }
 
     getAsset() {
-        return `sprites/${this.color}/bishop`;
+        return `assets/${this.color}/bishop`;
     }
 }
 
@@ -332,16 +354,22 @@ class Knight extends Piece {
             [this.x + 2, this.y - 1],
             [this.x + 2, this.y + 1]
         ];
-        return positions.filter(p => board.checkUnobstructed(this, p));
+        return positions.filter(p =>
+            board.checkUnobstructed(this, p) ||
+            board.hasPiece(p[0], p[1], this.color)
+        );
     }
 
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
-            .filter(p => board.validateBoardStateForMove(this, p));
+            .filter(p =>
+                board.validateBoardStateForMove(this, p) &&
+                board.checkUnobstructed(this, p)
+            );
     }
 
     getAsset() {
-        return `sprites/${this.color}/knight`;
+        return `assets/${this.color}/knight`;
     }
 }
 
@@ -352,10 +380,13 @@ class Rook extends Piece {
 
     getLegalMoves(board) {
         return this.getThreatenedPositions(board)
-            .filter(p => board.validateBoardStateForMove(this, p));
+            .filter(p =>
+                board.validateBoardStateForMove(this, p) &&
+                board.checkUnobstructed(this, p)
+            );
     }
 
     getAsset() {
-        return `sprites/${this.color}/rook`;
+        return `assets/${this.color}/rook`;
     }
 }

@@ -95,7 +95,7 @@ class Board {
     }
 
     confirmMove(piece, position) {
-        piece.handleMove(position);
+        var callback = piece.handleMove(this, position);
         // any piece at the destination position will be captured
         var pieces = this.pieces.filter(p => {
             if (p.x === piece.x && p.y === piece.y) {
@@ -110,11 +110,14 @@ class Board {
         piece.y = position[1];
         pieces.push(piece);
         this.pieces = pieces;
+        if (callback !== null) {
+            callback(this);
+        }
     }
 
     // validates check
     validateBoard(movedColor) {
-        var otherColor = (movedColor === Colors.white) ? Colors.black : Colors.white;
+        var otherColor = oppositeColor(movedColor);
         var ownKing = this.pieces.filter(
             p => p.color === movedColor && p instanceof King
         )[0];

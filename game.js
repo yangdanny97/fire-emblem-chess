@@ -1,3 +1,8 @@
+// util function for converting 0,0 -> A1, etc.
+function positionToId(x, y) {
+    return `${String.fromCharCode(x + 65)}${y + 1}`;
+}
+
 class Game {
     constructor() {
         this.board = new Board([
@@ -43,17 +48,77 @@ class Game {
         this.legalMoves = null; // legal moves of currently selected piece
         // start cursor at white king
         this.cursorPosition = [4, 0];
+        this.sounds = null;
     }
 
-    // util function for converting 0,0 -> A1, etc.
-    positionToId(x, y) {
-        return `${String.fromCharCode(x + 65)}${y + 1}`;
+    init() {
+        var body = d3.select("body");
+        body.on("keydown", () => {
+            if (this.lock) return;
+            if (d3.event.keyCode === 87) { // W
+                this.handleUp();
+            } else if (d3.event.keyCode === 65) { // A
+                this.handleLeft();
+            } else if (d3.event.keyCode === 83) { // S
+                this.handleDown();
+            } else if (d3.event.keyCode === 68) { // D
+                this.handleRight();
+            } else if (d3.event.keyCode === 88) { // X
+                this.handleSelect();
+            } else if (d3.event.keyCode === 90) { // Z
+                this.handleCancel();
+            }
+        });
+        this.sounds = {
+            "warning": new Howl({
+                src: ['./assets/sounds/warning.flac'],
+                autoplay: false,
+                loop: false,
+            }),
+            "capture": new Howl({
+                src: ['./assets/sounds/capture.flac'],
+                autoplay: false,
+                loop: false,
+            }),
+            "move": new Howl({
+                src: ['./assets/sounds/move.wav'],
+                autoplay: false,
+                loop: false,
+            }),
+            "select": new Howl({
+                src: ['./assets/sounds/select.wav'],
+                autoplay: false,
+                loop: false,
+            }),
+            "cursor": new Howl({
+                src: ['./assets/sounds/cursor.wav'],
+                autoplay: false,
+                loop: false,
+            }),
+            "victory": new Howl({
+                src: ['./assets/sounds/victory1.flac'],
+                autoplay: false,
+                loop: false,
+            }),
+            "white_turn": new Howl({
+                src: ['./assets/sounds/white_turn.flac'],
+                autoplay: false,
+                loop: false,
+            }),
+            "black_turn": new Howl({
+                src: ['./assets/sounds/black_turn.flac'],
+                autoplay: false,
+                loop: false,
+            }),
+        }
+        this.handleTurnStart();
+        this.draw();
     }
 
     handleTurnStart() {
         var color = this.turn;
         // make sure player is not checkmated
-        var otherColor = (color === Colors.white) ? Colors.black : Colors.white;
+        var otherColor = oppositeColor(color);
         var ownKing = this.board.pieces.filter(
             p => p.color === color && p instanceof King
         )[0];
@@ -65,32 +130,48 @@ class Game {
                 p => p.color === color
             ).reduce((acc, p) => acc + p.getLegalMoves(this.board).length, 0);
             if (legalMoves.length === 0) {
-                alert(`${color} has been checkmated!`);
+                alert(`${otherColor} won by checkmate!`);
+                this.winSound();
+                return;
             }
         }
+        this.turnStartSound();
+    }
+
+    winSound() {
+        this.sounds.victory.play();
+    }
+
+    cursorSound() {
+        this.sounds.cursor.play();
     }
 
     successSound() {
-        // TODO
+        this.sounds.select.play();
     }
 
     failureSound() {
-        // TODO
+        this.sounds.warning.play();
     }
 
     moveSound() {
-        // TODO
+        this.sounds.move.play()
     }
 
     turnStartSound() {
-        // TODO
+        if (this.turn === Colors.white) {
+            this.sounds.white_turn.play();
+        } else {
+            this.sounds.black_turn.play();
+        }
     }
 
     captureSound() {
-        // TODO
+        this.sounds.capture.play();
     }
 
     handleSelect() {
+        if (this.lock) return;
         if (this.selectedPiece === null) {
             // no piece selected
             var piece = this.board.getPiece(
@@ -99,24 +180,21 @@ class Game {
             );
             if (piece === null) {
                 // select nothing
-                console.log("select empty square");
                 this.failureSound();
             } else if (piece.color === this.turn) {
                 // select friendly piece
-                console.log("select friendly " + piece.getAsset());
                 this.selectedPiece = piece;
                 this.legalMoves = piece.getLegalMoves(this.board);
                 this.successSound();
                 this.draw();
             } else {
                 // select enemy piece - toggle threaten range highlight
-                console.log("select enemy " + piece.getAsset());
                 piece.emphasizeThreatenRange = !piece.emphasizeThreatenRange;
                 this.successSound();
                 this.draw();
             }
         } else {
-            // friendly piece selected
+            // friendly piece already selected
             var target_piece = this.board.getPiece(
                 this.cursorPosition[0], 
                 this.cursorPosition[1], 
@@ -128,21 +206,25 @@ class Game {
                     m[1] === this.cursorPosition[1]
                 );
                 if (legalMove.length > 0) {
-                    console.log("move");
                     var move = legalMove[0];
                     var pieces = this.board.pieces.length;
+                    this.lock = true;
                     this.board.confirmMove(this.selectedPiece, move);
                     if (pieces > this.board.pieces.length) {
                         this.captureSound();
                     } else {
                         this.moveSound();
                     }
-                    this.turn = (this.turn === Colors.white) ? Colors.black : Colors.white;
+                    this.draw();
+                    this.turn = oppositeColor(this.turn);
                     this.selectedPiece = null;
                     this.legalMoves = null;
-                    this.draw();
+                    setTimeout(() => {
+                        this.lock = false;
+                        this.draw();
+                        this.handleTurnStart();
+                    }, 1000);
                 } else {
-                    console.log("illegal move");
                     this.failureSound();
                 }
             } else {
@@ -151,10 +233,8 @@ class Game {
                     this.cursorPosition[0] !== this.selectedPiece.x || 
                     this.cursorPosition[1] !== this.selectedPiece.y
                 ) {
-                    console.log("select friendly " + piece.getAsset());
-                    this.selectedPiece = piece;
-                    this.legalMoves = piece.getLegalMoves(this.board);
-                    console.log(this.legalMoves);
+                    this.selectedPiece = target_piece;
+                    this.legalMoves = target_piece.getLegalMoves(this.board);
                     this.successSound();
                     this.draw();
                 }
@@ -163,19 +243,19 @@ class Game {
     }
 
     handleCancel() {
-        console.log("deselect");
-        console.log(this.cursorPosition);
+        if (this.lock) return;
         if (this.selectedPiece !== null) {
             this.successSound();
+            this.selectedPiece = null;
+            this.legalMoves = null;
+            this.draw();
         } else {
             this.failureSound();
         }
-        this.legalMoves = null;
-        this.selectedPiece = null;
-        this.draw();
     }
 
     handleLeft() {
+        if (this.lock) return;
         if (this.turn === Colors.white) {
             if (this.cursorPosition[0] > 0) {
                 this.cursorPosition[0] -= 1;
@@ -190,6 +270,7 @@ class Game {
     }
 
     handleRight() {
+        if (this.lock) return;
         if (this.turn === Colors.white) {
             if (this.cursorPosition[0] < 7) {
                 this.cursorPosition[0] += 1;
@@ -204,6 +285,7 @@ class Game {
     }
 
     handleDown() {
+        if (this.lock) return;
         if (this.turn === Colors.white) {
             if (this.cursorPosition[1] > 0) {
                 this.cursorPosition[1] -= 1;
@@ -218,6 +300,7 @@ class Game {
     }
 
     handleUp() {
+        if (this.lock) return;
         if (this.turn === Colors.white) {
             if (this.cursorPosition[1] < 7) {
                 this.cursorPosition[1] += 1;
@@ -232,12 +315,12 @@ class Game {
     }
 
     handleMoveCursor() {
-        this.moveSound();
+        this.cursorSound();
         this.draw();
     }
 
     draw() {
-        var otherColor = (this.turn === Colors.white) ? Colors.black : Colors.white;
+        var otherColor = oppositeColor(this.turn);
         var threatenedPositions = this.board.getThreatenedPositions(otherColor);
         var emphasizedThreatenedPositions = this.board.getEmphasizedThreatenedPositions(otherColor);
 
@@ -303,45 +386,48 @@ class Grid {
             posX = (7 - this.x) * gridSize;
             posY = this.y * gridSize;
         }
+        var g = svg.append("g")
+            .attr("class", positionToId(this.x, this.y));
         var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
-        svg.append("rect")
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", color);
-        if (this.threatened2) {
-            svg.append("rect")
+        g.append("rect")
+        .attr("width", gridSize)
+        .attr("height", gridSize)
+        .attr("transform", `translate(${posX} ${posY})`)
+        .attr("fill", color);
+        if (this.threatened2 && !this.movement) {
+            g.append("rect")
             .attr("width", gridSize)
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
             .attr("fill", "red")
-            .style("opacity", 0.5);
+            .style("opacity", 0.8);
         } else if (this.threatened) {
-            svg.append("rect")
+            g.append("rect")
             .attr("width", gridSize)
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
             .attr("fill", "lightcoral")
-            .style("opacity", 0.5);
+            .style("opacity", 0.8);
         }
         if (this.movement) {
-            svg.append("rect")
+            g.append("rect")
             .attr("width", gridSize)
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
             .attr("fill", "blue")
-            .style("opacity", 0.5);
+            .style("opacity", 0.8);
         }
         if (this.piece !== null) {
-            svg.append("image")
+            g.append("image")
             .attr("transform", `translate(${posX} ${posY})`)
             .attr("width", gridSize)
             .attr("height", gridSize)
+            .attr("id", positionToId(this.x, this.y))
             .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
         }
         if (this.selection) {
             var stroke = ScalingFactor * 3;
-            svg.append("rect")
+            g.append("rect")
             .attr("width", gridSize - stroke)
             .attr("height", gridSize - stroke)
             .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
