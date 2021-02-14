@@ -72,5 +72,10 @@ I have some ideas on customizability that I didn't implement because I didn't wa
 
 ### TODO
 - general styling of the webpage outside of the chess board
-- notifications/banners for turn start, check, checkmate, etc.
+- notifications/banners for turn start, checkmate, stalemate, etc.
 - optimize the rendering to properly use D3's data joins
+- support dumping and reading board states from ASCII, paving the way for automated testing & connecting a CPU
+
+### Known Issues
+- no pawn promotion for now, working on UI for that
+- covered squares calculation sometimes accounts for obstruction of the piece being moved
