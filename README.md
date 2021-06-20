@@ -1,4 +1,4 @@
-# fire-emblem-chess
+# Fire Emblem Chess
 A Fire Emblem themed, local, browser based chess game. ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png" width="400" height="400" />
