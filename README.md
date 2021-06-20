@@ -72,5 +72,5 @@ D3 is normally supposed to be used for dynamic & interactive data visualizations
 - general styling of the webpage outside of the chess board
 - notifications/banners for turn start, checkmate, stalemate, etc.
 - optimize the rendering to properly use D3's data joins
-- support dumping and reading board states from ASCII, paving the way for automated testing & connecting a computer
+- support dumping and reading board states from ASCII
 
