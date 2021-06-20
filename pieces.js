@@ -27,7 +27,7 @@ class Piece {
     canCover(board, pos) {
         var piece = board.getPiece(pos[0], pos[1]);
         if (
-            piece !== null && 
+            piece !== null &&
             (piece.color === this.color || piece instanceof King)
         ) {
             // defend or check
@@ -119,6 +119,11 @@ class Pawn extends Piece {
     constructor(color, x, y) {
         super(color, x, y);
         this.hasJustMoved2Spaces = false;
+    }
+
+    isPromotionElegible() {
+        return (this.color === Colors.white && this.y === 7) ||
+            (this.color === Colors.black && this.y === 0);
     }
 
     // ie: positions that an opposing king cannot move to

@@ -28,7 +28,7 @@ class Game {
             new Pawn(Colors.black, 0, 6),
             new Pawn(Colors.black, 1, 6),
             new Pawn(Colors.black, 2, 6),
-            new Pawn(Colors.black, 3, 6),
+            new Pawn(Colors.white, 3, 6), // FIXME
             new Pawn(Colors.black, 4, 6),
             new Pawn(Colors.black, 5, 6),
             new Pawn(Colors.black, 6, 6),
@@ -40,7 +40,7 @@ class Game {
             new Knight(Colors.black, 6, 7),
             new Bishop(Colors.black, 2, 7),
             new Bishop(Colors.black, 5, 7),
-            new Queen(Colors.black, 3, 7),
+            // new Queen(Colors.black, 3, 7),
             new King(Colors.black, 4, 7),
         ]);
         this.turn = Colors.white;
@@ -49,24 +49,42 @@ class Game {
         // start cursor at white king
         this.cursorPosition = [4, 0];
         this.sounds = null;
+        this.promote = false;
     }
 
     init() {
         var body = d3.select("body");
         body.on("keydown", () => {
-            if (this.lock) return;
-            if (d3.event.keyCode === 87) { // W
-                this.handleUp();
-            } else if (d3.event.keyCode === 65) { // A
-                this.handleLeft();
-            } else if (d3.event.keyCode === 83) { // S
-                this.handleDown();
-            } else if (d3.event.keyCode === 68) { // D
-                this.handleRight();
-            } else if (d3.event.keyCode === 88) { // X
-                this.handleSelect();
-            } else if (d3.event.keyCode === 90) { // Z
-                this.handleCancel();
+            var key = d3.event.keyCode;
+            switch (key) {
+                case 38:
+                case 87: // W
+                    this.handleUp();
+                    break;
+                case 37:
+                case 65: // A
+                    this.handleLeft();
+                    break;
+                case 40:
+                case 83: // S
+                    this.handleDown();
+                    break;
+                case 39:
+                case 68: // D
+                    this.handleRight();
+                    break;
+                case 88: // X
+                    this.handleSelect();
+                    break;
+                case 90: // Z
+                    this.handleCancel();
+                    break;
+                case 66: // B
+                case 78: // N
+                case 82: // R
+                case 81: // Q
+                    this.handlePromote(key);
+                    break;
             }
         });
         this.sounds = {
@@ -127,16 +145,19 @@ class Game {
         var otherCoveredPositions = this.board.getCoveredPositions(otherColor);
         var ownKingInCheck = otherCoveredPositions
             .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
-        if (ownKingInCheck) {
-            var legalMoves = this.board.pieces.filter(
-                p => p.color === color
-            ).reduce((acc, p) => acc + p.getLegalMoves(this.board).length, 0);
-            if (legalMoves === 0) {
-                // lock the game for now
-                this.winSound();
-                this.lock = true;
-                return;
+        var legalMoves = this.board.pieces.filter(
+            p => p.color === color
+        ).reduce((acc, p) => acc + p.getLegalMoves(this.board).length, 0);
+        if (legalMoves === 0) {
+            // lock the game for now
+            this.winSound();
+            this.lock = true;
+            if (ownKingInCheck) {
+                alert(`${this.color === Colors.black ? "White" : "Black"} has won! Refresh the page to play again.`);
+            } else {
+                alert("Stalemate! Refresh the page to play again.");
             }
+            return;
         }
         this.turnStartSound();
         this.draw();
@@ -220,11 +241,11 @@ class Game {
                         this.moveSound();
                     }
                     this.draw();
-                    setTimeout(() => {
-                        this.lock = false;
-                        this.turn = oppositeColor(this.turn);
-                        this.handleTurnStart();
-                    }, 1000);
+                    if (this.selectedPiece instanceof Pawn && this.selectedPiece.isPromotionElegible()) {
+                        this.promote = true;
+                    } else {
+                        this.endTurn();
+                    }
                 } else {
                     this.failureSound();
                 }
@@ -241,6 +262,14 @@ class Game {
                 }
             }
         }
+    }
+
+    endTurn() {
+        setTimeout(() => {
+            this.lock = false;
+            this.turn = oppositeColor(this.turn);
+            this.handleTurnStart();
+        }, 1000);
     }
 
     handleCancel() {
@@ -320,6 +349,31 @@ class Game {
         this.draw();
     }
 
+    handlePromote(key) {
+        if (!this.promote) return;
+        var piece;
+        switch (key) {
+            case 66: // B
+                piece = new Bishop(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                break;
+            case 78: // N
+                piece = new Knight(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                break;
+            case 82: // R
+                piece = new Rook(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                break;
+            case 81: // Q
+                piece = new Queen(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                break;
+        }
+        this.board.pieces = this.board.pieces.filter(p => p.x != piece.x || p.y != piece.y);
+        this.board.pieces.push(piece);
+        this.promote = false;
+        this.winSound(); // TODO - get unique promote sound
+        this.draw();
+        this.endTurn();
+    }
+
     draw() {
         var otherColor = oppositeColor(this.turn);
         var coveredPositions = this.board.getCoveredPositions(otherColor);
@@ -391,7 +445,7 @@ class Grid {
             .attr("class", positionToId(this.x, this.y));
 
         // draw base square
-        var inCheck = this.piece !== null && this.piece instanceof King && 
+        var inCheck = this.piece !== null && this.piece instanceof King &&
             this.piece.color === this.turnColor && this.covered;
         var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
         g.append("rect")
@@ -399,13 +453,13 @@ class Grid {
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
             .attr("fill", inCheck ? "red" : color);
-        
+
         // draw overlay (movement and cover)
         var overlayColor = null;
         if (this.covered2 && !this.movement && !inCheck) {
             overlayColor = "red";
         } else if (
-            this.covered && this.piece !== null && 
+            this.covered && this.piece !== null &&
             !inCheck && !this.movement
         ) {
             overlayColor = "lightcoral";
