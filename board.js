@@ -94,7 +94,6 @@ class Board {
     }
 
     confirmMove(piece, position) {
-        var callback = piece.handleMove(this, position);
         // any piece at the destination position will be captured
         var pieces = this.pieces.filter(p => {
             if (p.x === piece.x && p.y === piece.y) {
@@ -109,9 +108,6 @@ class Board {
         piece.y = position[1];
         pieces.push(piece);
         this.pieces = pieces;
-        if (callback !== null) {
-            callback(this);
-        }
     }
 
     // players cannot leave their own king in check

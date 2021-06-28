@@ -234,7 +234,13 @@ class Game {
                     var move = legalMove[0];
                     var pieces = this.board.pieces.length;
                     this.lock = true;
+                    // confirm move logic
+                    var callback = this.selectedPiece.handleMove(board, position);
                     this.board.confirmMove(this.selectedPiece, move);
+                    if (callback !== null) {
+                        callback(this);
+                    }
+                    // end confirm move logic
                     if (pieces > this.board.pieces.length) {
                         this.captureSound();
                     } else {
