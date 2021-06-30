@@ -212,44 +212,6 @@ function offsetHelper(piece, n) {
   }
 }
 
-function getLegalMoves(piece, board) {
-  var oneSpace_0 = piece.x;
-  var oneSpace_1 = piece.y + offsetHelper(piece, 1) | 0;
-  var oneSpace = [
-    oneSpace_0,
-    oneSpace_1
-  ];
-  var twoSpace_0 = piece.x;
-  var twoSpace_1 = piece.y + offsetHelper(piece, 2) | 0;
-  var twoSpace = [
-    twoSpace_0,
-    twoSpace_1
-  ];
-  var movement = Board.checkUnobstructed(board, piece, oneSpace, false) ? (
-      piece.hasMoved && Board.checkUnobstructed(board, piece, twoSpace, false) ? ({
-            hd: oneSpace,
-            tl: {
-              hd: twoSpace,
-              tl: /* [] */0
-            }
-          }) : ({
-            hd: oneSpace,
-            tl: /* [] */0
-          })
-    ) : /* [] */0;
-  return Belt_List.concat(movement, /* [] */0);
-}
-
-function isPromotionEligible(piece) {
-  if (piece.color === /* White */0 && piece.y === 7) {
-    return true;
-  } else if (piece.color === /* Black */1) {
-    return piece.y === 0;
-  } else {
-    return false;
-  }
-}
-
 function getCoveredPositions(piece, board) {
   var positions_0 = [
     piece.x - 1 | 0,
@@ -279,11 +241,68 @@ function getCoveredPositions(piece, board) {
               }));
 }
 
+function getLegalMoves(piece, board) {
+  var oneSpace_0 = piece.x;
+  var oneSpace_1 = piece.y + offsetHelper(piece, 1) | 0;
+  var oneSpace = [
+    oneSpace_0,
+    oneSpace_1
+  ];
+  var twoSpace_0 = piece.x;
+  var twoSpace_1 = piece.y + offsetHelper(piece, 2) | 0;
+  var twoSpace = [
+    twoSpace_0,
+    twoSpace_1
+  ];
+  var movement = Board.checkUnobstructed(board, piece, oneSpace, false) ? (
+      piece.hasMoved && Board.checkUnobstructed(board, piece, twoSpace, false) ? ({
+            hd: oneSpace,
+            tl: {
+              hd: twoSpace,
+              tl: /* [] */0
+            }
+          }) : ({
+            hd: oneSpace,
+            tl: /* [] */0
+          })
+    ) : /* [] */0;
+  var capture = Belt_List.keep(getCoveredPositions(piece, board), (function (p) {
+          if (Board.hasOppositeColoredPiece(board, p, piece.color)) {
+            return true;
+          }
+          var otherPiece = Board.getPiece(board, [
+                p[0],
+                piece.y
+              ], Utils.oppositeColor(piece.color));
+          if (otherPiece !== undefined && otherPiece.TAG === /* Pawn */0) {
+            return otherPiece._0.hasJustMoved2Spaces;
+          } else {
+            return false;
+          }
+        }));
+  return Belt_List.keep(Belt_List.concat(movement, capture), (function (p) {
+                return Board.validStateForMove(board, {
+                            TAG: /* Pawn */0,
+                            _0: piece
+                          }, p, undefined, undefined);
+              }));
+}
+
+function isPromotionEligible(piece) {
+  if (piece.color === /* White */0 && piece.y === 7) {
+    return true;
+  } else if (piece.color === /* Black */1) {
+    return piece.y === 0;
+  } else {
+    return false;
+  }
+}
+
 var Pawn = {
   offsetHelper: offsetHelper,
+  getCoveredPositions: getCoveredPositions,
   getLegalMoves: getLegalMoves,
-  isPromotionEligible: isPromotionEligible,
-  getCoveredPositions: getCoveredPositions
+  isPromotionEligible: isPromotionEligible
 };
 
 function getCoveredPositions$1(piece, board) {

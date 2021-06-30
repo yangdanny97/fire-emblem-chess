@@ -109,6 +109,14 @@ module Pawn = {
     }
   }
 
+  let getCoveredPositions = (piece, board) => {
+    let positions = list{
+      (piece["x"] - 1, piece["y"] + offsetHelper(piece, 1)),
+      (piece["x"] + 1, piece["y"] + offsetHelper(piece, 1)),
+    }
+    List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
+  }
+
   let getLegalMoves = (piece, board) => {
     let oneSpace = (piece["x"], piece["y"] + offsetHelper(piece, 1))
     let twoSpace = (piece["x"], piece["y"] + offsetHelper(piece, 2))
@@ -121,21 +129,27 @@ module Pawn = {
     } else {
       list{}
     }
-    let capture = list{} // TODO
-
-    List.concat(movement, capture)
+    let capture = getCoveredPositions(piece, board)->List.keep(p => {
+      if Board.hasOppositeColoredPiece(board, p, piece["color"]) {
+        // regular capture
+        true
+      } else {
+        // en passant
+        let (x, _) = p
+        let otherPiece = Board.getPiece(board, (x, piece["y"]), Some(oppositeColor(piece["color"])))
+        switch otherPiece {
+        | Some(Pawn(otherPawn)) => otherPawn["hasJustMoved2Spaces"]
+        | _ => false
+        }
+      }
+    })
+    List.concat(movement, capture)->List.keep(p =>
+      Board.validStateForMove(board, Pawn(piece), p, None, None)
+    )
   }
 
   let isPromotionEligible = piece => {
     (piece["color"] === White && piece["y"] === 7) || (piece["color"] === Black && piece["y"] === 0)
-  }
-
-  let getCoveredPositions = (piece, board) => {
-    let positions = list{
-      (piece["x"] - 1, piece["y"] + offsetHelper(piece, 1)),
-      (piece["x"] + 1, piece["y"] + offsetHelper(piece, 1)),
-    }
-    List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
   }
 }
 

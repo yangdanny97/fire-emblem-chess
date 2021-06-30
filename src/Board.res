@@ -1,7 +1,7 @@
 open Utils
 open Belt
 
-let validStateForMove = (board, piece, position, piece2, position2) => true
+let validStateForMove = (board, piece, position, piece2, position2) => true // TODO
 
 let getPiece = (board, (x, y), color) => {
   List.getBy(board["pieces"], p => {
@@ -24,7 +24,7 @@ let hasOppositeColoredPiece = (board, position, color) => {
   hasPiece(board, position, Some(oppositeColor(color)))
 }
 
-let checkUnobstructed = (board, piece, position, canCapture) => false
+let checkUnobstructed = (board, piece, position, canCapture) => false // TODO
 
 let rec confirmMove = (board, piece, (newX, newY)) => {
   let position = (newX, newY)
