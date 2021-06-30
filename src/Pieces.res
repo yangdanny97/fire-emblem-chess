@@ -99,14 +99,6 @@ let getUnobstructedDiagonalPositions = (piece, board) => {
   ->List.flatten
 }
 
-module King = {
-  type t = king
-
-  let getLegalMoves = (piece, board) => {
-    list{} // TODO
-  }
-}
-
 module Pawn = {
   type t = pawn
 
@@ -186,6 +178,67 @@ let getCoveredPositions = (piece, board) => {
   }
 }
 
+module King = {
+  type t = king
+
+  let getLegalMoves = (piece, board) => {
+    let king = King(piece)
+    let regularMoves =
+      getCoveredPositions(king, board)->List.keep(p =>
+        Board.validStateForMove(board, king, p, None, None)
+      )
+    if piece["hasMoved"] || piece["inCheck"] {
+      regularMoves
+    } else {
+      let y = switch piece["color"] {
+      | White => 0
+      | Black => 7
+      }
+      let leftRook = Board.getPiece(board, (0, y), Some(piece["color"]))
+      let rightRook = Board.getPiece(board, (7, y), Some(piece["color"]))
+      let leftCastle = switch leftRook {
+      | Some(Rook(r)) =>
+        if (
+          r["hasMoved"] ||
+          Board.hasPiece(board, (1, y), None) ||
+          Board.hasPiece(board, (2, y), None) ||
+          Board.hasPiece(board, (3, y), None) ||
+          !Board.validStateForMove(board, king, (3, y), None, None) ||
+          !Board.validStateForMove(board, king, (2, y), None, None) ||
+          !Board.validStateForMove(board, king, (2, y), Some(Rook(r)), Some((3, y)))
+        ) {
+          None
+        } else {
+          Some((2, y))
+        }
+      | _ => None
+      }
+      let rightCastle = switch rightRook {
+      | Some(Rook(r)) =>
+        if (
+          r["hasMoved"] ||
+          Board.hasPiece(board, (5, y), None) ||
+          Board.hasPiece(board, (6, y), None) ||
+          !Board.validStateForMove(board, king, (5, y), None, None) ||
+          !Board.validStateForMove(board, king, (6, y), None, None) ||
+          !Board.validStateForMove(board, king, (6, y), Some(Rook(r)), Some((5, y)))
+        ) {
+          None
+        } else {
+          Some((6, y))
+        }
+      | _ => None
+      }
+      switch (leftCastle, rightCastle) {
+      | (Some(p1), Some(p2)) => list{p1, p2, ...regularMoves}
+      | (Some(p1), None) => list{p1, ...regularMoves}
+      | (None, Some(p2)) => list{p2, ...regularMoves}
+      | (None, None) => regularMoves
+      }
+    }
+  }
+}
+
 let getLegalMoves = (piece, board) => {
   switch piece {
   | Pawn(p) => Pawn.getLegalMoves(p, board)
@@ -194,6 +247,8 @@ let getLegalMoves = (piece, board) => {
   | Bishop(_)
   | Knight(_)
   | Rook(_) =>
-    getCoveredPositions(piece, board)->List.keep(pos => Board.validStateForMove(board, piece, pos))
+    getCoveredPositions(piece, board)->List.keep(pos =>
+      Board.validStateForMove(board, piece, pos, None, None)
+    )
   }
 }

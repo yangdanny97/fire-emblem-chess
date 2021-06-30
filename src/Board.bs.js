@@ -4,7 +4,7 @@ import * as Curry from "rescript/lib/es6/curry.js";
 import * as Utils from "./Utils.bs.js";
 import * as Belt_List from "rescript/lib/es6/belt_List.js";
 
-function validStateForMove(board, piece, position) {
+function validStateForMove(board, piece, position, piece2, position2) {
   return true;
 }
 
@@ -47,7 +47,7 @@ function confirmMove(board, piece, param) {
         var newPawn = (p.y - newY | 0) === -2 || (p.y - newY | 0) === 2 ? Utils.withPosition(Utils.with2Spaces(p), position) : Utils.withMoved(Utils.withPosition(piece, position));
         var callback = p.x !== newX && p.y !== newY && hasPiece(board, position, undefined) ? (function (b) {
               return {
-                      pieces: Belt_List.keep(board.pieces, (function (i) {
+                      pieces: Belt_List.keep(b.pieces, (function (i) {
                               if (Utils.getX(i) !== newX) {
                                 return true;
                               } else {

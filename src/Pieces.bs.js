@@ -4,10 +4,6 @@ import * as Board from "./Board.bs.js";
 import * as Utils from "./Utils.bs.js";
 import * as Belt_List from "rescript/lib/es6/belt_List.js";
 
-function handleMove(piece) {
-  
-}
-
 function canCover(piece, board, position) {
   var p = Board.getPiece(board, position, undefined);
   if (p !== undefined && (p.TAG === /* King */1 || Utils.getColor(p) === piece.color)) {
@@ -207,14 +203,6 @@ function getUnobstructedDiagonalPositions(piece, board) {
                   })));
 }
 
-function getLegalMoves(piece, board) {
-  return /* [] */0;
-}
-
-var King = {
-  getLegalMoves: getLegalMoves
-};
-
 function offsetHelper(piece, n) {
   var match = piece.color;
   if (match) {
@@ -224,7 +212,7 @@ function offsetHelper(piece, n) {
   }
 }
 
-function getLegalMoves$1(piece, board) {
+function getLegalMoves(piece, board) {
   var oneSpace_0 = piece.x;
   var oneSpace_1 = piece.y + offsetHelper(piece, 1) | 0;
   var oneSpace = [
@@ -293,7 +281,7 @@ function getCoveredPositions(piece, board) {
 
 var Pawn = {
   offsetHelper: offsetHelper,
-  getLegalMoves: getLegalMoves$1,
+  getLegalMoves: getLegalMoves,
   isPromotionEligible: isPromotionEligible,
   getCoveredPositions: getCoveredPositions
 };
@@ -425,27 +413,141 @@ function getCoveredPositions$1(piece, board) {
   }
 }
 
+function getLegalMoves$1(piece, board) {
+  var king = {
+    TAG: /* King */1,
+    _0: piece
+  };
+  var regularMoves = Belt_List.keep(getCoveredPositions$1(king, board), (function (p) {
+          return Board.validStateForMove(board, king, p, undefined, undefined);
+        }));
+  if (piece.hasMoved || piece.inCheck) {
+    return regularMoves;
+  }
+  var match = piece.color;
+  var y = match ? 7 : 0;
+  var leftRook = Board.getPiece(board, [
+        0,
+        y
+      ], piece.color);
+  var rightRook = Board.getPiece(board, [
+        7,
+        y
+      ], piece.color);
+  var leftCastle;
+  if (leftRook !== undefined && leftRook.TAG === /* Rook */5) {
+    var r = leftRook._0;
+    leftCastle = r.hasMoved || Board.hasPiece(board, [
+          1,
+          y
+        ], undefined) || Board.hasPiece(board, [
+          2,
+          y
+        ], undefined) || Board.hasPiece(board, [
+          3,
+          y
+        ], undefined) || !Board.validStateForMove(board, king, [
+          3,
+          y
+        ], undefined, undefined) || !Board.validStateForMove(board, king, [
+          2,
+          y
+        ], undefined, undefined) || !Board.validStateForMove(board, king, [
+          2,
+          y
+        ], {
+          TAG: /* Rook */5,
+          _0: r
+        }, [
+          3,
+          y
+        ]) ? undefined : [
+        2,
+        y
+      ];
+  } else {
+    leftCastle = undefined;
+  }
+  var rightCastle;
+  if (rightRook !== undefined && rightRook.TAG === /* Rook */5) {
+    var r$1 = rightRook._0;
+    rightCastle = r$1.hasMoved || Board.hasPiece(board, [
+          5,
+          y
+        ], undefined) || Board.hasPiece(board, [
+          6,
+          y
+        ], undefined) || !Board.validStateForMove(board, king, [
+          5,
+          y
+        ], undefined, undefined) || !Board.validStateForMove(board, king, [
+          6,
+          y
+        ], undefined, undefined) || !Board.validStateForMove(board, king, [
+          6,
+          y
+        ], {
+          TAG: /* Rook */5,
+          _0: r$1
+        }, [
+          5,
+          y
+        ]) ? undefined : [
+        6,
+        y
+      ];
+  } else {
+    rightCastle = undefined;
+  }
+  if (leftCastle !== undefined) {
+    if (rightCastle !== undefined) {
+      return {
+              hd: leftCastle,
+              tl: {
+                hd: rightCastle,
+                tl: regularMoves
+              }
+            };
+    } else {
+      return {
+              hd: leftCastle,
+              tl: regularMoves
+            };
+    }
+  } else if (rightCastle !== undefined) {
+    return {
+            hd: rightCastle,
+            tl: regularMoves
+          };
+  } else {
+    return regularMoves;
+  }
+}
+
+var King = {
+  getLegalMoves: getLegalMoves$1
+};
+
 function getLegalMoves$2(piece, board) {
   switch (piece.TAG | 0) {
     case /* Pawn */0 :
-        return getLegalMoves$1(piece._0, board);
+        return getLegalMoves(piece._0, board);
     case /* King */1 :
-        return /* [] */0;
+        return getLegalMoves$1(piece._0, board);
     default:
       return Belt_List.keep(getCoveredPositions$1(piece, board), (function (pos) {
-                    return Board.validStateForMove(board, piece, pos);
+                    return Board.validStateForMove(board, piece, pos, undefined, undefined);
                   }));
   }
 }
 
 export {
-  handleMove ,
   canCover ,
   getUnobstructedCardinalPositions ,
   getUnobstructedDiagonalPositions ,
-  King ,
   Pawn ,
   getCoveredPositions$1 as getCoveredPositions,
+  King ,
   getLegalMoves$2 as getLegalMoves,
   
 }

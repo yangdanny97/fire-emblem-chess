@@ -1,7 +1,7 @@
 open Utils
 open Belt
 
-let validStateForMove = (board, piece, position) => true
+let validStateForMove = (board, piece, position, piece2, position2) => true
 
 let getPiece = (board, (x, y), color) => {
   List.getBy(board["pieces"], p => {
@@ -15,7 +15,7 @@ let getPiece = (board, (x, y), color) => {
 
 let hasPiece = (board, position, color) => {
   switch getPiece(board, position, color) {
-  | Some(p) => true
+  | Some(_) => true
   | None => false
   }
 }
@@ -40,7 +40,7 @@ let rec confirmMove = (board, piece, (newX, newY)) => {
         Some(
           b =>
             {
-              "pieces": List.keep(board["pieces"], i => getX(i) !== newX || getY(i) !== p["y"]),
+              "pieces": List.keep(b["pieces"], i => getX(i) !== newX || getY(i) !== p["y"]),
             },
         )
       } else {
