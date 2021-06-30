@@ -1,8 +1,6 @@
 open Utils
 open Belt
 
-let validStateForMove = (board, piece, position, piece2, position2) => true // TODO
-
 let getPiece = (board, (x, y), color) => {
   List.getBy(board["pieces"], p => {
     let colorPredicate = switch color {
@@ -24,10 +22,25 @@ let hasOppositeColoredPiece = (board, position, color) => {
   hasPiece(board, position, Some(oppositeColor(color)))
 }
 
-let checkUnobstructed = (board, piece, position, canCapture) => false // TODO
+let checkUnobstructed = (board, piece, (x,y), canCapture) => {
+  if x < 0 || x > 7 || y < 0 || y > 7 {
+    false
+  } else {
+    if canCapture {
+      let target = getPiece(board, (x,y), None)
+      switch target {
+        |Some(King(_)) => false
+        |Some(p) => getColor(p) !== piece["color"]
+        |None => true
+      }
+    } else {
+      !hasPiece(board, (x,y), None)
+    }
+  }
+}
 
-let rec confirmMove = (board, piece, (newX, newY)) => {
-  let position = (newX, newY)
+let rec confirmMove = (board, piece, position) => {
+  let (newX, newY) = position
   let (newPiece, callback) = switch piece {
   | Pawn(p) => {
       let newPawn = if p["y"] - newY === -2 || p["y"] - newY === 2 {

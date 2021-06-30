@@ -57,6 +57,10 @@ function getColor(piece) {
   return piece._0.color;
 }
 
+function getEmphasis(piece) {
+  return piece._0.emphasizeCoverRange;
+}
+
 function getX(piece) {
   return piece._0.x;
 }
@@ -250,6 +254,25 @@ function withPosition(piece, param) {
   }
 }
 
+function isPromotionEligible(piece) {
+  if (piece.color === /* White */0 && piece.y === 7) {
+    return true;
+  } else if (piece.color === /* Black */1) {
+    return piece.y === 0;
+  } else {
+    return false;
+  }
+}
+
+function pawnOffsetHelper(p, n) {
+  var match = p.color;
+  if (match) {
+    return -n | 0;
+  } else {
+    return n;
+  }
+}
+
 var scalingFactor = 4;
 
 var assetSize = 23;
@@ -261,11 +284,14 @@ export {
   colorName ,
   getAsset ,
   getColor ,
+  getEmphasis ,
   getX ,
   getY ,
   withMoved ,
   with2Spaces ,
   withPosition ,
+  isPromotionEligible ,
+  pawnOffsetHelper ,
   
 }
 /* No side effect */

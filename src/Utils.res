@@ -69,6 +69,17 @@ let getColor = piece => {
   }
 }
 
+let getEmphasis = piece => {
+  switch piece {
+  | Pawn(p) => p["emphasizeCoverRange"]
+  | King(k) => k["emphasizeCoverRange"]
+  | Queen(q) => q["emphasizeCoverRange"]
+  | Bishop(b) => b["emphasizeCoverRange"]
+  | Knight(n) => n["emphasizeCoverRange"]
+  | Rook(r) => r["emphasizeCoverRange"]
+  }
+}
+
 let getX = piece => {
   switch piece {
   | Pawn(p) => p["x"]
@@ -236,5 +247,16 @@ let withPosition = (piece, (x, y)) => {
       "hasMoved": p["hasMoved"],
       "emphasizeCoverRange": p["emphasizeCoverRange"],
     })
+  }
+}
+
+let isPromotionEligible = piece => {
+  (piece["color"] === White && piece["y"] === 7) || (piece["color"] === Black && piece["y"] === 0)
+}
+
+let pawnOffsetHelper = (p, n) => {
+  switch p["color"] {
+  | White => n
+  | Black => -n
   }
 }

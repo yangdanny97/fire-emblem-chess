@@ -4,10 +4,6 @@ import * as Curry from "rescript/lib/es6/curry.js";
 import * as Utils from "./Utils.bs.js";
 import * as Belt_List from "rescript/lib/es6/belt_List.js";
 
-function validStateForMove(board, piece, position, piece2, position2) {
-  return true;
-}
-
 function getPiece(board, param, color) {
   var y = param[1];
   var x = param[0];
@@ -29,17 +25,36 @@ function hasOppositeColoredPiece(board, position, color) {
   return hasPiece(board, position, Utils.oppositeColor(color));
 }
 
-function checkUnobstructed(board, piece, position, canCapture) {
-  return false;
+function checkUnobstructed(board, piece, param, canCapture) {
+  var y = param[1];
+  var x = param[0];
+  if (x < 0 || x > 7 || y < 0 || y > 7) {
+    return false;
+  }
+  if (!canCapture) {
+    return !hasPiece(board, [
+                x,
+                y
+              ], undefined);
+  }
+  var target = getPiece(board, [
+        x,
+        y
+      ], undefined);
+  if (target !== undefined) {
+    if (target.TAG === /* King */1) {
+      return false;
+    } else {
+      return Utils.getColor(target) !== piece.color;
+    }
+  } else {
+    return true;
+  }
 }
 
-function confirmMove(board, piece, param) {
-  var newY = param[1];
-  var newX = param[0];
-  var position = [
-    newX,
-    newY
-  ];
+function confirmMove(board, piece, position) {
+  var newY = position[1];
+  var newX = position[0];
   var match;
   switch (piece.TAG | 0) {
     case /* Pawn */0 :
@@ -131,7 +146,6 @@ function confirmMove(board, piece, param) {
 }
 
 export {
-  validStateForMove ,
   getPiece ,
   hasPiece ,
   hasOppositeColoredPiece ,

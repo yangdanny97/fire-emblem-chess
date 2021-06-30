@@ -99,63 +99,15 @@ let getUnobstructedDiagonalPositions = (piece, board) => {
   ->List.flatten
 }
 
-module Pawn = {
-  type t = pawn
-
-  let offsetHelper = (piece, n) => {
-    switch piece["color"] {
-    | White => n
-    | Black => -n
-    }
-  }
-
-  let getCoveredPositions = (piece, board) => {
-    let positions = list{
-      (piece["x"] - 1, piece["y"] + offsetHelper(piece, 1)),
-      (piece["x"] + 1, piece["y"] + offsetHelper(piece, 1)),
-    }
-    List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
-  }
-
-  let getLegalMoves = (piece, board) => {
-    let oneSpace = (piece["x"], piece["y"] + offsetHelper(piece, 1))
-    let twoSpace = (piece["x"], piece["y"] + offsetHelper(piece, 2))
-    let movement = if Board.checkUnobstructed(board, piece, oneSpace, false) {
-      if piece["hasMoved"] && Board.checkUnobstructed(board, piece, twoSpace, false) {
-        list{oneSpace, twoSpace}
-      } else {
-        list{oneSpace}
-      }
-    } else {
-      list{}
-    }
-    let capture = getCoveredPositions(piece, board)->List.keep(p => {
-      if Board.hasOppositeColoredPiece(board, p, piece["color"]) {
-        // regular capture
-        true
-      } else {
-        // en passant
-        let (x, _) = p
-        let otherPiece = Board.getPiece(board, (x, piece["y"]), Some(oppositeColor(piece["color"])))
-        switch otherPiece {
-        | Some(Pawn(otherPawn)) => otherPawn["hasJustMoved2Spaces"]
-        | _ => false
-        }
-      }
-    })
-    List.concat(movement, capture)->List.keep(p =>
-      Board.validStateForMove(board, Pawn(piece), p, None, None)
-    )
-  }
-
-  let isPromotionEligible = piece => {
-    (piece["color"] === White && piece["y"] === 7) || (piece["color"] === Black && piece["y"] === 0)
-  }
-}
-
-let getCoveredPositions = (piece, board) => {
+let rec getCoveredPositions = (piece, board) => {
   switch piece {
-  | Pawn(p) => Pawn.getCoveredPositions(p, board)
+  | Pawn(p) => {
+      let positions = list{
+        (p["x"] - 1, p["y"] + pawnOffsetHelper(p, 1)),
+        (p["x"] + 1, p["y"] + pawnOffsetHelper(p, 1)),
+      }
+      List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(p, board, (x, y)))
+    }
   | King(k) => {
       let positions = list{
         (k["x"] - 1, k["y"]),
@@ -192,77 +144,139 @@ let getCoveredPositions = (piece, board) => {
   }
 }
 
-module King = {
-  type t = king
-
-  let getLegalMoves = (piece, board) => {
-    let king = King(piece)
-    let regularMoves =
-      getCoveredPositions(king, board)->List.keep(p =>
-        Board.validStateForMove(board, king, p, None, None)
-      )
-    if piece["hasMoved"] || piece["inCheck"] {
-      regularMoves
-    } else {
-      let y = switch piece["color"] {
-      | White => 0
-      | Black => 7
-      }
-      let leftRook = Board.getPiece(board, (0, y), Some(piece["color"]))
-      let rightRook = Board.getPiece(board, (7, y), Some(piece["color"]))
-      let leftCastle = switch leftRook {
-      | Some(Rook(r)) =>
-        if (
-          r["hasMoved"] ||
-          Board.hasPiece(board, (1, y), None) ||
-          Board.hasPiece(board, (2, y), None) ||
-          Board.hasPiece(board, (3, y), None) ||
-          !Board.validStateForMove(board, king, (3, y), None, None) ||
-          !Board.validStateForMove(board, king, (2, y), None, None) ||
-          !Board.validStateForMove(board, king, (2, y), Some(Rook(r)), Some((3, y)))
-        ) {
-          None
-        } else {
-          Some((2, y))
-        }
-      | _ => None
-      }
-      let rightCastle = switch rightRook {
-      | Some(Rook(r)) =>
-        if (
-          r["hasMoved"] ||
-          Board.hasPiece(board, (5, y), None) ||
-          Board.hasPiece(board, (6, y), None) ||
-          !Board.validStateForMove(board, king, (5, y), None, None) ||
-          !Board.validStateForMove(board, king, (6, y), None, None) ||
-          !Board.validStateForMove(board, king, (6, y), Some(Rook(r)), Some((5, y)))
-        ) {
-          None
-        } else {
-          Some((6, y))
-        }
-      | _ => None
-      }
-      switch (leftCastle, rightCastle) {
-      | (Some(p1), Some(p2)) => list{p1, p2, ...regularMoves}
-      | (Some(p1), None) => list{p1, ...regularMoves}
-      | (None, Some(p2)) => list{p2, ...regularMoves}
-      | (None, None) => regularMoves
-      }
-    }
-  }
+and validStateForMove = (board, piece, position) => {
+  let newBoard = Board.confirmMove(board, piece, position)
+  validBoard(newBoard, getColor(piece))
 }
 
-let getLegalMoves = (piece, board) => {
+and getLegalMoves = (piece, board) => {
   switch piece {
-  | Pawn(p) => Pawn.getLegalMoves(p, board)
-  | King(k) => King.getLegalMoves(k, board)
+  | Pawn(p) => {
+      let oneSpace = (p["x"], p["y"] + pawnOffsetHelper(p, 1))
+      let twoSpace = (p["x"], p["y"] + pawnOffsetHelper(p, 2))
+      let movement = if Board.checkUnobstructed(board, p, oneSpace, false) {
+        if p["hasMoved"] && Board.checkUnobstructed(board, p, twoSpace, false) {
+          list{oneSpace, twoSpace}
+        } else {
+          list{oneSpace}
+        }
+      } else {
+        list{}
+      }
+      let capture = getCoveredPositions(piece, board)->List.keep(pos => {
+        if Board.hasOppositeColoredPiece(board, pos, p["color"]) {
+          // regular capture
+          true
+        } else {
+          // en passant
+          let (x, _) = pos
+          let otherPiece = Board.getPiece(board, (x, p["y"]), Some(oppositeColor(p["color"])))
+          switch otherPiece {
+          | Some(Pawn(otherPawn)) => otherPawn["hasJustMoved2Spaces"]
+          | _ => false
+          }
+        }
+      })
+      List.concat(movement, capture)->List.keep(pos => validStateForMove(board, Pawn(p), pos))
+    }
+  | King(k) => {
+      let regularMoves =
+        getCoveredPositions(piece, board)->List.keep(p => validStateForMove(board, piece, p))
+      if k["hasMoved"] || k["inCheck"] {
+        regularMoves
+      } else {
+        let y = switch k["color"] {
+        | White => 0
+        | Black => 7
+        }
+        let leftRook = Board.getPiece(board, (0, y), Some(k["color"]))
+        let rightRook = Board.getPiece(board, (7, y), Some(k["color"]))
+        let leftCastle = switch leftRook {
+        | Some(Rook(r)) =>
+          if (
+            r["hasMoved"] ||
+            Board.hasPiece(board, (1, y), None) ||
+            Board.hasPiece(board, (2, y), None) ||
+            Board.hasPiece(board, (3, y), None) ||
+            !validStateForMove(board, piece, (3, y)) ||
+            !validStateForMove(board, piece, (2, y)) ||
+            !validStateForMove(board, piece, (2, y))
+          ) {
+            None
+          } else {
+            Some((2, y))
+          }
+        | _ => None
+        }
+        let rightCastle = switch rightRook {
+        | Some(Rook(r)) =>
+          if (
+            r["hasMoved"] ||
+            Board.hasPiece(board, (5, y), None) ||
+            Board.hasPiece(board, (6, y), None) ||
+            !validStateForMove(board, piece, (5, y)) ||
+            !validStateForMove(board, piece, (6, y)) ||
+            !validStateForMove(board, piece, (6, y))
+          ) {
+            None
+          } else {
+            Some((6, y))
+          }
+        | _ => None
+        }
+        switch (leftCastle, rightCastle) {
+        | (Some(p1), Some(p2)) => list{p1, p2, ...regularMoves}
+        | (Some(p1), None) => list{p1, ...regularMoves}
+        | (None, Some(p2)) => list{p2, ...regularMoves}
+        | (None, None) => regularMoves
+        }
+      }
+    }
   | Queen(_)
   | Bishop(_)
   | Knight(_)
   | Rook(_) =>
-    getCoveredPositions(piece, board)->List.keep(pos =>
-      Board.validStateForMove(board, piece, pos, None, None)
-    )
+    getCoveredPositions(piece, board)->List.keep(pos => validStateForMove(board, piece, pos))
   }
+}
+
+and coveredPositionsHelper = (pieces, board) => {
+  List.reduce(pieces, list{}, (acc, p) => list{getCoveredPositions(p, board), ...acc})
+  ->List.flatten
+  ->List.sort(((x1, y1), (x2, y2)) =>
+    if x1 === x2 {
+      y1 - y2
+    } else {
+      x1 - x2
+    }
+  )
+  ->List.reduce(list{}, (acc, (x1, y1)) => {
+    switch acc {
+    | list{} => list{(x1, y1)}
+    | list{(x2, y2), ..._} => if x1 === x2 && y1 === y2 {
+        acc
+      } else {
+        list{(x1, y1), ...acc}
+      }
+    }
+  })
+}
+
+and getCoveredPositionsForColor = (board, color) => {
+  List.keep(board["pieces"], p => getColor(p) === color)->coveredPositionsHelper(board)
+}
+
+and validBoard = (board, movedColor) => {
+  let ownKing = List.keep(board["pieces"], p => {
+    switch p {
+    | King(k) => k["color"] === movedColor
+    | _ => false
+    }
+  })->List.getExn(1)
+  let otherCoveredPositions = getCoveredPositionsForColor(board, oppositeColor(movedColor))
+  !List.has(otherCoveredPositions, (getX(ownKing), getY(ownKing)), ((x1, y1), (x2, y2)) => x1 === x2  && y1 === y2)
+}
+
+let getEmphasizedCoveredPositionsForColor = (board, color) => {
+  List.keep(board["pieces"], p => getColor(p) === color && getEmphasis(p))->coveredPositionsHelper
 }
