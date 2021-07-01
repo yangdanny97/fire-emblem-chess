@@ -6,7 +6,7 @@
   "scripts": {
     "re:build": "rescript",
     "re:start": "rescript build -w",
-    "build": "rescript && npx webpack"
+    "build": "npx webpack"
   },
   "dependencies": {
     "webpack": "^5.41.1",

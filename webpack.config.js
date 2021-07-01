@@ -2,12 +2,11 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        pieces: "./src/Pieces.bs.js",
-        board: "./src/Board.bs.js",
-        utils: "./src/Utils.bs.js",
+        game: './src/game.js'
     },
     output: {
-        filename: "[name].js",
-        path: path.resolve(__dirname, "build/"),
-    }
+        filename: "game.js",
+        path: path.resolve(__dirname, "out/"),
+    },
+    mode: "none"
 };

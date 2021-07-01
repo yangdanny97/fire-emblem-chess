@@ -269,7 +269,7 @@ and getCoveredPositionsForColor = (board, color) => {
 and validBoard = (board, movedColor) => {
   let ownKing = List.keep(board["pieces"], p => {
     switch p {
-    | King(k) => k["color"] === movedColor
+    | King(k) => true // k["color"] === movedColor // TODO FIX THIS
     | _ => false
     }
   })->List.getExn(1)
@@ -278,5 +278,5 @@ and validBoard = (board, movedColor) => {
 }
 
 let getEmphasizedCoveredPositionsForColor = (board, color) => {
-  List.keep(board["pieces"], p => getColor(p) === color && getEmphasis(p))->coveredPositionsHelper
+  List.keep(board["pieces"], p => getColor(p) === color && getEmphasis(p))->coveredPositionsHelper(board)
 }

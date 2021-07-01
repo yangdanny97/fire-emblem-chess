@@ -1,47 +1,177 @@
+import * as Utils from './Utils.bs.js';
+import * as Board from './Board.bs.js';
+import * as Pieces from './Pieces.bs.js';
 // util function for converting 0,0 -> A1, etc.
 function positionToId(x, y) {
     return `${String.fromCharCode(x + 65)}${y + 1}`;
 }
 
+const ScalingFactor = 4;
+const AssetSize = 23;
+
+class Colors {
+    static white = 0;
+    static black = 1;
+}
+
+class Tags {
+    static pawn = 0;
+    static king = 1;
+    static queen = 2;
+    static bishop = 3;
+    static knight = 4;
+    static rook = 5;
+}
+
+// adapt to rescript
+class Adapters {
+    static buildList(arr) {
+        arr = arr.map(a => a).reverse();
+        var lst = 0;
+        for (var i = 0; i < arr.length; i++) {
+            lst = {
+                hd: arr[i],
+                tl: lst
+            }
+        }
+        return lst;
+    }
+
+    static buildArray(lst) {
+        if (lst === 0 || lst === undefined) {
+            return [];
+        } else {
+            return [lst.hd, ...Adapters.buildArray(lst.tl)];
+        }
+    }
+
+    static board(pieces) {
+        return {
+            pieces: Adapters.buildList(pieces),
+        }
+    }
+
+    static pawn(color, x, y) {
+        return {
+            TAG: /* Pawn */ 0,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false,
+                hasJustMoved2Spaces: false
+            }
+        };
+    }
+
+    static king(color, x, y) {
+        return {
+            TAG: /* King */ 1,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false,
+                inCheck: false,
+                checkmated: false
+            }
+        };
+    }
+
+    static queen(color, x, y) {
+        return {
+            TAG: /* Queen */ 2,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false
+            }
+        };
+    }
+
+    static bishop(color, x, y) {
+        return {
+            TAG: /* Bishop */ 3,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false
+            }
+        };
+    }
+
+    static knight(color, x, y) {
+        return {
+            TAG: /* Knight */ 4,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false
+            }
+        }
+    }
+
+    static rook(color, x, y) {
+        return {
+            TAG: /* Rook */ 5,
+            _0: {
+                x: x,
+                y: y,
+                color: color,
+                hasMoved: false,
+                emphasizeCoverRange: false
+            }
+        };
+    }
+}
+
 class Game {
     constructor() {
-        this.board = new Board([
+        this.board = Adapters.board([
             // white pawns
-            new Pawn(Colors.white, 0, 1),
-            new Pawn(Colors.white, 1, 1),
-            new Pawn(Colors.white, 2, 1),
-            new Pawn(Colors.white, 3, 1),
-            new Pawn(Colors.white, 4, 1),
-            new Pawn(Colors.white, 5, 1),
-            new Pawn(Colors.white, 6, 1),
-            new Pawn(Colors.white, 7, 1),
+            Adapters.pawn(Colors.white, 0, 1),
+            Adapters.pawn(Colors.white, 1, 1),
+            Adapters.pawn(Colors.white, 2, 1),
+            Adapters.pawn(Colors.white, 3, 1),
+            Adapters.pawn(Colors.white, 4, 1),
+            Adapters.pawn(Colors.white, 5, 1),
+            Adapters.pawn(Colors.white, 6, 1),
+            Adapters.pawn(Colors.white, 7, 1),
             // white pieces
-            new Rook(Colors.white, 0, 0),
-            new Rook(Colors.white, 7, 0),
-            new Knight(Colors.white, 1, 0),
-            new Knight(Colors.white, 6, 0),
-            new Bishop(Colors.white, 2, 0),
-            new Bishop(Colors.white, 5, 0),
-            new Queen(Colors.white, 3, 0),
-            new King(Colors.white, 4, 0),
+            Adapters.rook(Colors.white, 0, 0),
+            Adapters.rook(Colors.white, 7, 0),
+            Adapters.knight(Colors.white, 1, 0),
+            Adapters.knight(Colors.white, 6, 0),
+            Adapters.bishop(Colors.white, 2, 0),
+            Adapters.bishop(Colors.white, 5, 0),
+            Adapters.queen(Colors.white, 3, 0),
+            Adapters.king(Colors.white, 4, 0),
             // black pawns
-            new Pawn(Colors.black, 0, 6),
-            new Pawn(Colors.black, 1, 6),
-            new Pawn(Colors.black, 2, 6),
-            new Pawn(Colors.white, 3, 6), // FIXME
-            new Pawn(Colors.black, 4, 6),
-            new Pawn(Colors.black, 5, 6),
-            new Pawn(Colors.black, 6, 6),
-            new Pawn(Colors.black, 7, 6),
+            Adapters.pawn(Colors.black, 0, 6),
+            Adapters.pawn(Colors.black, 1, 6),
+            Adapters.pawn(Colors.black, 2, 6),
+            Adapters.pawn(Colors.black, 3, 6),
+            Adapters.pawn(Colors.black, 4, 6),
+            Adapters.pawn(Colors.black, 5, 6),
+            Adapters.pawn(Colors.black, 6, 6),
+            Adapters.pawn(Colors.black, 7, 6),
             // black pieces
-            new Rook(Colors.black, 0, 7),
-            new Rook(Colors.black, 7, 7),
-            new Knight(Colors.black, 1, 7),
-            new Knight(Colors.black, 6, 7),
-            new Bishop(Colors.black, 2, 7),
-            new Bishop(Colors.black, 5, 7),
-            // new Queen(Colors.black, 3, 7),
-            new King(Colors.black, 4, 7),
+            Adapters.rook(Colors.black, 0, 7),
+            Adapters.rook(Colors.black, 7, 7),
+            Adapters.knight(Colors.black, 1, 7),
+            Adapters.knight(Colors.black, 6, 7),
+            Adapters.bishop(Colors.black, 2, 7),
+            Adapters.bishop(Colors.black, 5, 7),
+            Adapters.queen(Colors.black, 3, 7),
+            Adapters.king(Colors.black, 4, 7),
         ]);
         this.turn = Colors.white;
         this.selectedPiece = null;
@@ -138,16 +268,16 @@ class Game {
         this.legalMoves = null;
         var color = this.turn;
         // make sure player is not checkmated
-        var otherColor = oppositeColor(color);
-        var ownKing = this.board.pieces.filter(
-            p => p.color === color && p instanceof King
+        var otherColor = Utils.oppositeColor(color);
+        var ownKing = Adapters.buildArray(this.board.pieces).filter(
+            p => p._0.color === color && p.TAG === 1 // king
         )[0];
-        var otherCoveredPositions = this.board.getCoveredPositions(otherColor);
+        var otherCoveredPositions = Adapters.buildArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
         var ownKingInCheck = otherCoveredPositions
-            .find(p => p[0] === ownKing.x && p[1] === ownKing.y) !== undefined;
-        var legalMoves = this.board.pieces.filter(
-            p => p.color === color
-        ).reduce((acc, p) => acc + p.getLegalMoves(this.board).length, 0);
+            .find(p => p[0] === ownKing._0.x && p[1] === ownKing._0.y) !== undefined;
+        var legalMoves = Adapters.buildArray(this.board.pieces).filter(
+            p => p._0.color === color
+        ).reduce((acc, p) => acc + Adapters.buildArray(Pieces.getLegalMoves(p, this.board)).length, 0);
         if (legalMoves === 0) {
             // lock the game for now
             this.winSound();
@@ -197,19 +327,20 @@ class Game {
 
     handleSelect() {
         if (this.lock) return;
-        if (this.selectedPiece === null) {
+        if (this.selectedPiece === undefined || this.selectedPiece === null) {
             // no piece selected
-            var piece = this.board.getPiece(
-                this.cursorPosition[0],
-                this.cursorPosition[1],
+            var piece = Board.getPiece(
+                this.board,
+                this.cursorPosition,
+                undefined
             );
-            if (piece === null) {
+            if (piece === undefined) {
                 // select nothing
                 this.failureSound();
-            } else if (piece.color === this.turn) {
+            } else if (piece._0.color === this.turn) {
                 // select friendly piece
                 this.selectedPiece = piece;
-                this.legalMoves = piece.getLegalMoves(this.board);
+                this.legalMoves = Adapters.buildArray(Pieces.getLegalMoves(piece, this.board));
                 this.successSound();
                 this.draw();
             } else {
@@ -220,11 +351,12 @@ class Game {
             }
         } else {
             // friendly piece already selected
-            var target_piece = this.board.getPiece(
-                this.cursorPosition[0],
-                this.cursorPosition[1],
+            var target_piece = Board.getPiece(
+                this.board,
+                this.cursorPosition,
+                undefined
             );
-            if (target_piece === null || target_piece.color !== this.turn) {
+            if (target_piece === undefined || target_piece._0.color !== this.turn) {
                 // select empty space or enemy piece - try to move
                 var legalMove = this.legalMoves.filter(m =>
                     m[0] === this.cursorPosition[0] &&
@@ -232,22 +364,17 @@ class Game {
                 );
                 if (legalMove.length > 0) {
                     var move = legalMove[0];
-                    var pieces = this.board.pieces.length;
+                    var pieces = Adapters.buildArray(this.board.pieces).length;
                     this.lock = true;
-                    // confirm move logic
-                    var callback = this.selectedPiece.handleMove(board, position);
-                    this.board.confirmMove(this.selectedPiece, move);
-                    if (callback !== null) {
-                        callback(this);
-                    }
+                    this.board = Board.confirmMove(this.board, this.selectedPiece, move);
                     // end confirm move logic
-                    if (pieces > this.board.pieces.length) {
+                    if (pieces > Adapters.buildArray(this.board.pieces).length) {
                         this.captureSound();
                     } else {
                         this.moveSound();
                     }
                     this.draw();
-                    if (this.selectedPiece instanceof Pawn && this.selectedPiece.isPromotionElegible()) {
+                    if (this.selectedPiece.TAG === Tags.pawn && Utils.isPromotionEligible(this.selectedPiece._0)) {
                         this.promote = true;
                     } else {
                         this.endTurn();
@@ -258,11 +385,11 @@ class Game {
             } else {
                 // select different friendly piece
                 if (
-                    this.cursorPosition[0] !== this.selectedPiece.x ||
-                    this.cursorPosition[1] !== this.selectedPiece.y
+                    this.cursorPosition[0] !== this.selectedPiece._0.x ||
+                    this.cursorPosition[1] !== this.selectedPiece._0.y
                 ) {
                     this.selectedPiece = target_piece;
-                    this.legalMoves = target_piece.getLegalMoves(this.board);
+                    this.legalMoves = Adapters.buildArray(Pieces.getLegalMoves(target_piece, this.board));
                     this.successSound();
                     this.draw();
                 }
@@ -273,7 +400,7 @@ class Game {
     endTurn() {
         setTimeout(() => {
             this.lock = false;
-            this.turn = oppositeColor(this.turn);
+            this.turn = Utils.oppositeColor(this.turn);
             this.handleTurnStart();
         }, 1000);
     }
@@ -360,20 +487,21 @@ class Game {
         var piece;
         switch (key) {
             case 66: // B
-                piece = new Bishop(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                piece = Adapters.bishop(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 78: // N
-                piece = new Knight(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                piece = Adapters.knight(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 82: // R
-                piece = new Rook(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                piece = Adapters.rook(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 81: // Q
-                piece = new Queen(this.selectedPiece.color, this.selectedPiece.x, this.selectedPiece.y);
+                piece = Adapters.queen(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
         }
-        this.board.pieces = this.board.pieces.filter(p => p.x != piece.x || p.y != piece.y);
-        this.board.pieces.push(piece);
+        var pieces = Adapters.buildArray(this.board.pieces).filter(p => p._0.x != piece._0.x || p._0.y != piece._0.y);
+        pieces.push(piece);
+        this.board.pieces = Adapters.buildList(pieces);
         this.promote = false;
         this.winSound(); // TODO - get unique promote sound
         this.draw();
@@ -381,9 +509,9 @@ class Game {
     }
 
     draw() {
-        var otherColor = oppositeColor(this.turn);
-        var coveredPositions = this.board.getCoveredPositions(otherColor);
-        var emphasizedCoveredPositions = this.board.getEmphasizedCoveredPositions(otherColor);
+        var otherColor = Utils.oppositeColor(this.turn);
+        var coveredPositions = Adapters.buildArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
+        var emphasizedCoveredPositions = Adapters.buildArray(Pieces.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
 
         var grid = [];
         for (var i = 0; i < 8; i++) {
@@ -394,8 +522,8 @@ class Game {
             grid.push(row);
         }
 
-        this.board.pieces.forEach(p => {
-            grid[p.x][p.y].piece = p;
+        Adapters.buildArray(this.board.pieces).forEach(p => {
+            grid[p._0.x][p._0.y].piece = p;
         });
 
         coveredPositions.forEach(p => {
@@ -406,11 +534,13 @@ class Game {
         });
 
         grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
-        if (this.selectedPiece !== null) {
-            grid[this.selectedPiece.x][this.selectedPiece.y].selection = true;
-            this.legalMoves.forEach(p => {
-                grid[p[0]][p[1]].movement = true;
-            });
+        if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
+            grid[this.selectedPiece._0.x][this.selectedPiece._0.y].selection = true;
+                if (this.legalMoves !== null) {
+                this.legalMoves.forEach(p => {
+                    grid[p[0]][p[1]].movement = true;
+                });
+            }
         }
         var svg = d3.select("#board");
         svg.selectAll('*').remove();
@@ -451,8 +581,8 @@ class Grid {
             .attr("class", positionToId(this.x, this.y));
 
         // draw base square
-        var inCheck = this.piece !== null && this.piece instanceof King &&
-            this.piece.color === this.turnColor && this.covered;
+        var inCheck = this.piece !== undefined && this.piece !== null && this.piece.TAG === Tags.king &&
+            this.piece._0.color === this.turnColor && this.covered;
         var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
         g.append("rect")
             .attr("width", gridSize)
@@ -484,13 +614,13 @@ class Grid {
         }
 
         // sprite
-        if (this.piece !== null) {
+        if (this.piece !== undefined && this.piece !== null) {
             g.append("image")
                 .attr("transform", `translate(${posX} ${posY})`)
                 .attr("width", gridSize)
                 .attr("height", gridSize)
                 .attr("id", positionToId(this.x, this.y))
-                .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
+                .attr("xlink:href", `./${Utils.getAsset(this.piece)}.gif`);
         }
 
         // selection box
@@ -506,4 +636,9 @@ class Grid {
                 .attr("stroke", "goldenrod");
         }
     }
+}
+
+window.onload = () => {
+    var game = new Game();
+    game.init();
 }
