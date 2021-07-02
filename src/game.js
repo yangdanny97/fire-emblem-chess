@@ -324,12 +324,11 @@ class Game {
                 // select friendly piece
                 this.selectedPiece = piece;
                 this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(piece, this.board));
-                console.log(this.legalMoves);
                 this.successSound();
                 this.draw();
             } else {
                 // select enemy piece - toggle cover range highlight
-                piece.emphasizeCoverRange = !piece.emphasizeCoverRange;
+                piece._0.emphasizeCoverRange = !piece._0.emphasizeCoverRange;
                 this.successSound();
                 this.draw();
             }
@@ -471,16 +470,16 @@ class Game {
         var piece = null;
         switch (key) {
             case 66: // B
-                piece = Adapters.bishop(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Adapters.bishop(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 78: // N
-                piece = Adapters.knight(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Adapters.knight(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 82: // R
-                piece = Adapters.rook(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Adapters.rook(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
             case 81: // Q
-                piece = Adapters.queen(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Adapters.queen(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
         }
         if (piece === null) {
