@@ -27,7 +27,7 @@ class Tags {
 }
 
 // adapt to rescript
-class Adapters {
+class Constructors {
     static board(pieces) {
         return {
             pieces: Belt_List.fromArray(pieces),
@@ -118,43 +118,43 @@ class Adapters {
 
 class Game {
     constructor() {
-        this.board = Adapters.board([
+        this.board = Constructors.board([
             // white pawns
-            Adapters.pawn(Colors.white, 0, 1),
-            Adapters.pawn(Colors.white, 1, 1),
-            Adapters.pawn(Colors.white, 2, 1),
-            Adapters.pawn(Colors.white, 3, 1),
-            Adapters.pawn(Colors.white, 4, 1),
-            Adapters.pawn(Colors.white, 5, 1),
-            Adapters.pawn(Colors.white, 6, 1),
-            Adapters.pawn(Colors.white, 7, 1),
+            Constructors.pawn(Colors.white, 0, 1),
+            Constructors.pawn(Colors.white, 1, 1),
+            Constructors.pawn(Colors.white, 2, 1),
+            Constructors.pawn(Colors.white, 3, 1),
+            Constructors.pawn(Colors.white, 4, 1),
+            Constructors.pawn(Colors.white, 5, 1),
+            Constructors.pawn(Colors.white, 6, 1),
+            Constructors.pawn(Colors.white, 7, 1),
             // white pieces
-            Adapters.rook(Colors.white, 0, 0),
-            Adapters.rook(Colors.white, 7, 0),
-            Adapters.knight(Colors.white, 1, 0),
-            Adapters.knight(Colors.white, 6, 0),
-            Adapters.bishop(Colors.white, 2, 0),
-            Adapters.bishop(Colors.white, 5, 0),
-            Adapters.queen(Colors.white, 3, 0),
-            Adapters.king(Colors.white, 4, 0),
+            Constructors.rook(Colors.white, 0, 0),
+            Constructors.rook(Colors.white, 7, 0),
+            Constructors.knight(Colors.white, 1, 0),
+            Constructors.knight(Colors.white, 6, 0),
+            Constructors.bishop(Colors.white, 2, 0),
+            Constructors.bishop(Colors.white, 5, 0),
+            Constructors.queen(Colors.white, 3, 0),
+            Constructors.king(Colors.white, 4, 0),
             // black pawns
-            Adapters.pawn(Colors.black, 0, 6),
-            Adapters.pawn(Colors.black, 1, 6),
-            Adapters.pawn(Colors.black, 2, 6),
-            Adapters.pawn(Colors.black, 3, 6),
-            Adapters.pawn(Colors.black, 4, 6),
-            Adapters.pawn(Colors.black, 5, 6),
-            Adapters.pawn(Colors.black, 6, 6),
-            Adapters.pawn(Colors.black, 7, 6),
+            Constructors.pawn(Colors.black, 0, 6),
+            Constructors.pawn(Colors.black, 1, 6),
+            Constructors.pawn(Colors.black, 2, 6),
+            Constructors.pawn(Colors.black, 3, 6),
+            Constructors.pawn(Colors.black, 4, 6),
+            Constructors.pawn(Colors.black, 5, 6),
+            Constructors.pawn(Colors.black, 6, 6),
+            Constructors.pawn(Colors.black, 7, 6),
             // black pieces
-            Adapters.rook(Colors.black, 0, 7),
-            Adapters.rook(Colors.black, 7, 7),
-            Adapters.knight(Colors.black, 1, 7),
-            Adapters.knight(Colors.black, 6, 7),
-            Adapters.bishop(Colors.black, 2, 7),
-            Adapters.bishop(Colors.black, 5, 7),
-            Adapters.queen(Colors.black, 3, 7),
-            Adapters.king(Colors.black, 4, 7),
+            Constructors.rook(Colors.black, 0, 7),
+            Constructors.rook(Colors.black, 7, 7),
+            Constructors.knight(Colors.black, 1, 7),
+            Constructors.knight(Colors.black, 6, 7),
+            Constructors.bishop(Colors.black, 2, 7),
+            Constructors.bishop(Colors.black, 5, 7),
+            Constructors.queen(Colors.black, 3, 7),
+            Constructors.king(Colors.black, 4, 7),
         ]);
         this.turn = Colors.white;
         this.selectedPiece = null;
@@ -253,13 +253,13 @@ class Game {
         // make sure player is not checkmated
         var otherColor = Utils.oppositeColor(color);
         var ownKing = Belt_List.toArray(this.board.pieces).filter(
-            p => p._0.color === color && p.TAG === 1 // king
+            p => Utils.getColor(p) === color && p.TAG === 1 // king
         )[0];
         var otherCoveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
         var ownKingInCheck = otherCoveredPositions
-            .find(p => p[0] === ownKing._0.x && p[1] === ownKing._0.y) !== undefined;
+            .find(p => p[0] === Utils.getX(ownKing) && p[1] === Utils.getY(ownKing)) !== undefined;
         var legalMoves = Belt_List.toArray(this.board.pieces).filter(
-            p => p._0.color === color
+            p => Utils.getColor(p) === color
         ).reduce((acc, p) => acc + Belt_List.size(Pieces.getLegalMoves(p, this.board)), 0);
         if (legalMoves === 0) {
             // lock the game for now
@@ -320,7 +320,7 @@ class Game {
             if (piece === undefined) {
                 // select nothing
                 this.failureSound();
-            } else if (piece._0.color === this.turn) {
+            } else if (Utils.getColor(piece) === this.turn) {
                 // select friendly piece
                 this.selectedPiece = piece;
                 this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(piece, this.board));
@@ -328,7 +328,7 @@ class Game {
                 this.draw();
             } else {
                 // select enemy piece - toggle cover range highlight
-                piece._0.emphasizeCoverRange = !piece._0.emphasizeCoverRange;
+                piece._0.emphasizeCoverRange = !Utils.getEmphasis(piece);
                 this.successSound();
                 this.draw();
             }
@@ -339,7 +339,7 @@ class Game {
                 this.cursorPosition,
                 undefined
             );
-            if (target_piece === undefined || target_piece._0.color !== this.turn) {
+            if (target_piece === undefined || Utils.getColor(target_piece) !== this.turn) {
                 // select empty space or enemy piece - try to move
                 var legalMove = this.legalMoves.filter(m =>
                     m[0] === this.cursorPosition[0] &&
@@ -349,7 +349,11 @@ class Game {
                     var move = legalMove[0];
                     var pieces = Belt_List.size(this.board.pieces);
                     this.lock = true;
-                    this.board = Board.confirmMove(this.board, this.selectedPiece, move);
+                    this.board = Board.confirmMove(this.board, this.selectedPiece, move, true);
+                    // update selected piece position for movement calculations
+                    // this object is no longer on the board
+                    this.selectedPiece._0.x = move[0];
+                    this.selectedPiece._0.y = move[1];
                     // end confirm move logic
                     if (pieces > Belt_List.size(this.board.pieces)) {
                         this.captureSound();
@@ -357,7 +361,7 @@ class Game {
                         this.moveSound();
                     }
                     this.draw();
-                    if (this.selectedPiece.TAG === Tags.pawn && Utils.isPromotionEligible(this.selectedPiece._0)) {
+                    if (this.selectedPiece.TAG === Tags.pawn && move[1] === Utils.promotionRank(this.selectedPiece._0)) {
                         this.promote = true;
                     } else {
                         this.endTurn();
@@ -368,8 +372,8 @@ class Game {
             } else {
                 // select different friendly piece
                 if (
-                    this.cursorPosition[0] !== this.selectedPiece._0.x ||
-                    this.cursorPosition[1] !== this.selectedPiece._0.y
+                    this.cursorPosition[0] !== Utils.getX(this.selectedPiece) ||
+                    this.cursorPosition[1] !== Utils.getY(this.selectedPiece)
                 ) {
                     this.selectedPiece = target_piece;
                     this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(target_piece, this.board));
@@ -466,27 +470,30 @@ class Game {
     }
 
     handlePromote(key) {
-        if (!this.promote) return;
+        if (!this.promote) {
+            this.failureSound();
+            return;
+        }
         var piece = null;
         switch (key) {
             case 66: // B
-                piece = Adapters.bishop(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Constructors.bishop(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 78: // N
-                piece = Adapters.knight(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Constructors.knight(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 82: // R
-                piece = Adapters.rook(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Constructors.rook(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 81: // Q
-                piece = Adapters.queen(this.selectedPiece._0.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
+                piece = Constructors.queen(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
         }
         if (piece === null) {
             this.failureSound();
             return;
         }
-        var pieces = Belt_List.keep(this.board.pieces, p => p._0.x != piece._0.x || p._0.y != piece._0.y);
+        var pieces = Belt_List.keep(this.board.pieces, p => Utils.getX(p) != Utils.getX(piece) || Utils.getY(p) != Utils.getY(piece));
         this.board.pieces = {
             hd: piece,
             tl: pieces,
@@ -512,7 +519,7 @@ class Game {
         }
 
         Belt_List.toArray(this.board.pieces).forEach(p => {
-            grid[p._0.x][p._0.y].piece = p;
+            grid[Utils.getX(p)][Utils.getY(p)].piece = p;
         });
 
         coveredPositions.forEach(p => {
@@ -524,7 +531,7 @@ class Game {
 
         grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
         if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
-            grid[this.selectedPiece._0.x][this.selectedPiece._0.y].selection = true;
+            grid[Utils.getX(this.selectedPiece)][Utils.getY(this.selectedPiece)].selection = true;
                 if (this.legalMoves !== null) {
                 this.legalMoves.forEach(p => {
                     grid[p[0]][p[1]].movement = true;
@@ -571,7 +578,7 @@ class Grid {
 
         // draw base square
         var inCheck = this.piece !== undefined && this.piece !== null && this.piece.TAG === Tags.king &&
-            this.piece._0.color === this.turnColor && this.covered;
+            Utils.getColor(this.piece) === this.turnColor && this.covered;
         var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
         g.append("rect")
             .attr("width", gridSize)

@@ -120,7 +120,7 @@ let withMoved = piece => {
         "color": p["color"],
         "hasMoved": true,
         "emphasizeCoverRange": p["emphasizeCoverRange"],
-        "hasJustMoved2Spaces": p["hasJustMoved2Spaces"],
+        "hasJustMoved2Spaces": false,
       }),
     )
   | King(k) =>
@@ -194,6 +194,17 @@ let with2Spaces = p => {
   })
 }
 
+let disable2Spaces = p => {
+  Pawn({
+    "x": p["x"],
+    "y": p["y"],
+    "color": p["color"],
+    "hasMoved": p["hasMoved"],
+    "emphasizeCoverRange": p["emphasizeCoverRange"],
+    "hasJustMoved2Spaces": false,
+  })
+}
+
 let withPosition = (piece, (x, y)) => {
   switch piece {
   | Pawn(p) =>
@@ -250,8 +261,18 @@ let withPosition = (piece, (x, y)) => {
   }
 }
 
-let isPromotionEligible = piece => {
-  (piece["color"] === White && piece["y"] === 7) || (piece["color"] === Black && piece["y"] === 0)
+let promotionRank = p => {
+  switch p["color"] {
+  | White => 7
+  | Black => 0
+  }
+}
+
+let backRank = p => {
+  switch p["color"] {
+  | White => 0
+  | Black => 7
+  }
 }
 
 let pawnOffsetHelper = (p, n) => {

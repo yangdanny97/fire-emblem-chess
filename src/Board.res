@@ -37,7 +37,8 @@ let checkUnobstructed = (board, piece, (x, y), canCapture) => {
   }
 }
 
-let rec confirmMove = (board, piece, position) => {
+let rec confirmMove = (board, piece, position, _) => {
+  // last argument is for debug
   let (newX, newY) = position
   let noop = b => b
   let (newPiece, callback) = switch piece {
@@ -59,21 +60,18 @@ let rec confirmMove = (board, piece, position) => {
       (newPawn, callback)
     }
   | King(k) => {
-      let backRowY = switch k["color"] {
-      | White => 0
-      | Black => 7
-      }
+      let y = backRank(k)
       let castleHelper = (oldRookX, newRookX, board) => {
-        let rook = getPiece(board, (oldRookX, backRowY), None)
+        let rook = getPiece(board, (oldRookX, y), None)
         switch rook {
-        | Some(r) => b => confirmMove(b, r, (newRookX, backRowY))
+        | Some(r) => b => confirmMove(b, r, (newRookX, y), true)
         | None => raise(Not_found)
         }
       }
       if !k["hasMoved"] {
-        if newX === 2 && newY === backRowY {
+        if newX === 2 && newY === y {
           (withPosition(piece, position)->withMoved, castleHelper(0, 3, board))
-        } else if newX === 6 && newY === backRowY {
+        } else if newX === 6 && newY === y {
           (withPosition(piece, position)->withMoved, castleHelper(7, 5, board))
         } else {
           (withPosition(piece, position)->withMoved, noop)
@@ -91,8 +89,13 @@ let rec confirmMove = (board, piece, position) => {
     newPiece,
     ...List.keep(board["pieces"], p => {
       !(getX(p) === getX(piece) && getY(p) === getY(piece)) &&
-      !(getX(p) === getX(newPiece) && getY(p) === getX(newPiece))
-    }),
+      !(getX(p) === getX(newPiece) && getY(p) === getY(newPiece))
+    })->List.map(p =>
+      switch p {
+      | Pawn(pawn) => Utils.disable2Spaces(pawn)
+      | _ => p
+      }
+    ),
   }
   callback({
     "pieces": pieces,

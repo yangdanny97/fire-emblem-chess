@@ -113,7 +113,7 @@ let rec getCoveredPositions = (piece, board) => {
 }
 
 and validStateForMove = (board, piece, position) => {
-  let newBoard = Board.confirmMove(board, piece, position)
+  let newBoard = Board.confirmMove(board, piece, position, false)
   validBoard(newBoard, getColor(piece))
 }
 
@@ -136,7 +136,7 @@ and getLegalMoves = (piece, board) => {
           // regular capture
           true
         } else {
-          // en passant
+          // en passant -- adjacent enemy pawns that have just moved 2 spaces
           let (x, _) = pos
           let otherPiece = Board.getPiece(board, (x, p["y"]), Some(oppositeColor(p["color"])))
           switch otherPiece {
