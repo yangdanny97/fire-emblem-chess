@@ -1,5 +1,15 @@
 {
   "devDependencies": {
-    "bs-platform": "^9.0.2"
+    "bs-platform": "^9.0.2",
+    "rescript": "^9.1.4"
+  },
+  "scripts": {
+    "re:build": "rescript",
+    "re:start": "rescript build -w",
+    "build": "npx webpack"
+  },
+  "dependencies": {
+    "webpack": "^5.41.1",
+    "webpack-cli": "^4.7.2"
   }
 }

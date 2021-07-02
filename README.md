@@ -27,19 +27,22 @@ Pressing X on an enemy unit will show which squares it can move to, attack, or d
 ### Movement and Cover Highlighting
 This is based on a similar mechanic in the Fire Emblem games, where legal movements and danger are displayed on the map. In chess, this feature makes it easy to visualize threats and identify hanging pieces. 
 
-When a unit is selected, undefended squares that it may move to/capture will be highlighted in blue. Squares that it may move to/capture that are covered by enemy units are highlighted in purple. While you are in check, your king will be highlighted in red.
+When a unit is selected, undefended squares that it may move to/capture will be highlighted in blue. Squares that it may move to/capture that are in range of enemy units are highlighted in purple. While you are in check, your king will be highlighted in red.
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/movement.png" width="400" height="400" />
 
 Units which are threatened or defended by enemy units are highlighted in pink. You may also select an enemy unit to show all the squares that it threatens/defends (including empty squares).
 
-For example, in the below screenshots, the black pawn on B5 is hanging, while the pawn on H5 is defended. The bishop on C4 is threatened by the pawn on B5.
+In the following screenshot, the black pawn on B5 is hanging so its square is blue, while the black pawn on H5 is defended so its square is purple. 
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging.png" width="300" height="300" />
+
+Here, the white bishop on C4 is threatened by the black pawn on B5, so its square is pink.
+
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/hanging2.png" width="300" height="300" />
 
 ### Pieces
-I edited sprites from the Fire Emblem GBA games to represent each chess piece. For reference, the mapping is shown below:
+I used modified sprites from the Fire Emblem GBA games to represent each chess piece. For reference, the mapping is shown below:
 
 | Chess Piece | FE Sprite              |
 |-------------|------------------------|
@@ -47,8 +50,8 @@ I edited sprites from the Fire Emblem GBA games to represent each chess piece. F
 | Bishop      | Bishop   ![Black bishop](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/bishop.gif)![White bishop](https://yangdanny97.github.io/fire-emblem-chess/assets/White/bishop.gif)| |
 | Knight      | Great Knight/Paladin  ![Black knight](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/knight.gif)![White knight](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)||
 | Rook        | Ballista  ![Black rook](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/rook.gif)![White rook](https://yangdanny97.github.io/fire-emblem-chess/assets/White/rook.gif)||
-| King        | Pontifex (NPC)  ![Black king](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/king.gif)![White king](https://yangdanny97.github.io/fire-emblem-chess/assets/White/king.gif)||
-| Queen       | Queen (NPC)  ![Black queen](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/queen.gif)![White queen](https://yangdanny97.github.io/fire-emblem-chess/assets/White/queen.gif)||
+| King        | Pontifex  ![Black king](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/king.gif)![White king](https://yangdanny97.github.io/fire-emblem-chess/assets/White/king.gif)||
+| Queen       | Queen  ![Black queen](https://yangdanny97.github.io/fire-emblem-chess/assets/Black/queen.gif)![White queen](https://yangdanny97.github.io/fire-emblem-chess/assets/White/queen.gif)||
 
 ### Sounds
 I used sounds from the GBA games and Fire Emblem Heroes.
