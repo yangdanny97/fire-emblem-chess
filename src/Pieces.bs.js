@@ -14,43 +14,7 @@ function canCover(piece, board, position) {
   }
 }
 
-function getUnobstructedCardinalPositions(piece, board) {
-  var up = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) === piece.x) {
-                return Utils.getY(p) > piece.y;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
-        }));
-  var down = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) === piece.x) {
-                return Utils.getY(p) < piece.y;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
-        }));
-  var left = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getY(p) === piece.y) {
-                return Utils.getX(p) < piece.x;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getX(b) - Utils.getX(a) | 0;
-        }));
-  var right = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getY(p) === piece.y) {
-                return Utils.getX(p) > piece.x;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getX(a) - Utils.getX(b) | 0;
-        }));
+function unobstructedPositionsHelper(piece, board, a, b, c, d) {
   var positionHelper = function (acc, position) {
     if (!acc[0]) {
       return [
@@ -85,123 +49,84 @@ function getUnobstructedCardinalPositions(piece, board) {
     }
   };
   return Belt_List.flatten(Belt_List.map({
-                  hd: up,
+                  hd: a,
                   tl: {
-                    hd: down,
+                    hd: b,
                     tl: {
-                      hd: left,
+                      hd: c,
                       tl: {
-                        hd: right,
+                        hd: d,
                         tl: /* [] */0
                       }
                     }
                   }
                 }, (function (l) {
-                    return Belt_List.reduce(Belt_List.map(l, (function (i) {
-                                        return [
-                                                Utils.getX(i),
-                                                Utils.getY(i)
-                                              ];
-                                      })), [
+                    return Belt_List.reduce(l, [
                                   true,
                                   /* [] */0
                                 ], positionHelper)[1];
                   })));
 }
 
+function getUnobstructedCardinalPositions(piece, board) {
+  var up = Belt_List.makeBy(7 - piece.y | 0, (function (i) {
+          return [
+                  piece.x,
+                  (piece.y + i | 0) + 1 | 0
+                ];
+        }));
+  var down = Belt_List.makeBy(piece.y, (function (i) {
+          return [
+                  piece.x,
+                  (piece.y - i | 0) - 1 | 0
+                ];
+        }));
+  var left = Belt_List.makeBy(piece.x, (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  piece.y
+                ];
+        }));
+  var right = Belt_List.makeBy(7 - piece.x | 0, (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  piece.y
+                ];
+        }));
+  return unobstructedPositionsHelper(piece, board, up, down, left, right);
+}
+
 function getUnobstructedDiagonalPositions(piece, board) {
-  var ul = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) < piece.x && Utils.getY(p) > piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
+  console.log("AAA");
+  var ul = Belt_List.makeBy(Math.min(piece.x, 7 - piece.y | 0), (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  (piece.y + i | 0) + 1 | 0
+                ];
         }));
-  var ur = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) > piece.x && Utils.getY(p) > piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
+  console.log(Belt_List.toArray(ul));
+  var ur = Belt_List.makeBy(7 - Math.max(piece.x, piece.y) | 0, (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  (piece.y + i | 0) + 1 | 0
+                ];
         }));
-  var dl = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) < piece.x && Utils.getY(p) < piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
+  console.log(Belt_List.toArray(ur));
+  var dl = Belt_List.makeBy(Math.min(piece.x, piece.y), (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  (piece.y - i | 0) - 1 | 0
+                ];
         }));
-  var dr = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) > piece.x && Utils.getY(p) < piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
+  console.log(Belt_List.toArray(dl));
+  var dr = Belt_List.makeBy(Math.min(7 - piece.x | 0, piece.y), (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  (piece.y - i | 0) - 1 | 0
+                ];
         }));
-  var positionHelper = function (acc, position) {
-    if (!acc[0]) {
-      return [
-              false,
-              acc[1]
-            ];
-    }
-    var lst = acc[1];
-    if (canCover(piece, board, position)) {
-      if (Board.hasPiece(board, position, undefined)) {
-        return [
-                false,
-                {
-                  hd: position,
-                  tl: lst
-                }
-              ];
-      } else {
-        return [
-                true,
-                {
-                  hd: position,
-                  tl: lst
-                }
-              ];
-      }
-    } else {
-      return [
-              false,
-              lst
-            ];
-    }
-  };
-  return Belt_List.flatten(Belt_List.map({
-                  hd: ul,
-                  tl: {
-                    hd: ur,
-                    tl: {
-                      hd: dl,
-                      tl: {
-                        hd: dr,
-                        tl: /* [] */0
-                      }
-                    }
-                  }
-                }, (function (l) {
-                    return Belt_List.reduce(Belt_List.map(l, (function (i) {
-                                        return [
-                                                Utils.getX(i),
-                                                Utils.getY(i)
-                                              ];
-                                      })), [
-                                  true,
-                                  /* [] */0
-                                ], positionHelper)[1];
-                  })));
+  console.log(Belt_List.toArray(dr));
+  return unobstructedPositionsHelper(piece, board, ul, ur, dl, dr);
 }
 
 function getCoveredPositions(piece, board) {
@@ -363,6 +288,27 @@ function getCoveredPositionsForColor(board, color) {
                   })), board);
 }
 
+function validBoard(board, movedColor) {
+  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
+              if (p.TAG === /* King */1) {
+                return p._0.color === movedColor;
+              } else {
+                return false;
+              }
+            })), 0);
+  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
+  return !Belt_List.has(otherCoveredPositions, [
+              Utils.getX(ownKing),
+              Utils.getY(ownKing)
+            ], (function (param, param$1) {
+                if (param[0] === param$1[0]) {
+                  return param[1] === param$1[1];
+                } else {
+                  return false;
+                }
+              }));
+}
+
 function coveredPositionsHelper(pieces, board) {
   return Belt_List.reduce(Belt_List.sort(Belt_List.flatten(Belt_List.reduce(pieces, /* [] */0, (function (acc, p) {
                             return {
@@ -404,27 +350,6 @@ function coveredPositionsHelper(pieces, board) {
               }));
 }
 
-function validBoard(board, movedColor) {
-  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
-              if (p.TAG === /* King */1) {
-                return true;
-              } else {
-                return false;
-              }
-            })), 1);
-  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
-  return !Belt_List.has(otherCoveredPositions, [
-              Utils.getX(ownKing),
-              Utils.getY(ownKing)
-            ], (function (param, param$1) {
-                if (param[0] === param$1[0]) {
-                  return param[1] === param$1[1];
-                } else {
-                  return false;
-                }
-              }));
-}
-
 function validStateForMove(board, piece, position) {
   var newBoard = Board.confirmMove(board, piece, position);
   return validBoard(newBoard, Utils.getColor(piece));
@@ -447,7 +372,7 @@ function getLegalMoves(piece, board) {
           twoSpace_1
         ];
         var movement = Board.checkUnobstructed(board, p, oneSpace, false) ? (
-            p.hasMoved && Board.checkUnobstructed(board, p, twoSpace, false) ? ({
+            !p.hasMoved && Board.checkUnobstructed(board, p, twoSpace, false) ? ({
                   hd: oneSpace,
                   tl: {
                     hd: twoSpace,
@@ -481,7 +406,11 @@ function getLegalMoves(piece, board) {
     case /* King */1 :
         var k = piece._0;
         var regularMoves = Belt_List.keep(getCoveredPositions(piece, board), (function (p) {
-                return validStateForMove(board, piece, p);
+                if (Board.checkUnobstructed(board, k, p, true)) {
+                  return validStateForMove(board, piece, p);
+                } else {
+                  return false;
+                }
               }));
         if (k.hasMoved || k.inCheck) {
           return regularMoves;
@@ -561,8 +490,13 @@ function getLegalMoves(piece, board) {
           return regularMoves;
         }
     default:
+      var x = piece._0;
       return Belt_List.keep(getCoveredPositions(piece, board), (function (pos) {
-                    return validStateForMove(board, piece, pos);
+                    if (Board.checkUnobstructed(board, x, pos, true)) {
+                      return validStateForMove(board, piece, pos);
+                    } else {
+                      return false;
+                    }
                   }));
   }
 }
@@ -578,6 +512,7 @@ function getEmphasizedCoveredPositionsForColor(board, color) {
 }
 
 exports.canCover = canCover;
+exports.unobstructedPositionsHelper = unobstructedPositionsHelper;
 exports.getUnobstructedCardinalPositions = getUnobstructedCardinalPositions;
 exports.getUnobstructedDiagonalPositions = getUnobstructedDiagonalPositions;
 exports.getCoveredPositions = getCoveredPositions;

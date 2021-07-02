@@ -56,12 +56,15 @@ function checkUnobstructed(board, piece, param, canCapture) {
 function confirmMove(board, piece, position) {
   var newY = position[1];
   var newX = position[0];
+  var noop = function (b) {
+    return b;
+  };
   var match;
   switch (piece.TAG | 0) {
     case /* Pawn */0 :
         var p = piece._0;
         var newPawn = (p.y - newY | 0) === -2 || (p.y - newY | 0) === 2 ? Utils.withPosition(Utils.with2Spaces(p), position) : Utils.withMoved(Utils.withPosition(piece, position));
-        var callback = p.x !== newX && p.y !== newY && hasPiece(board, position, undefined) ? (function (b) {
+        var callback = p.x !== newX && p.y !== newY && !hasPiece(board, position, undefined) ? (function (b) {
               return {
                       pieces: Belt_List.keep(b.pieces, (function (i) {
                               if (Utils.getX(i) !== newX) {
@@ -71,7 +74,7 @@ function confirmMove(board, piece, position) {
                               }
                             }))
                     };
-            }) : undefined;
+            }) : noop;
         match = [
           newPawn,
           callback
@@ -101,7 +104,7 @@ function confirmMove(board, piece, position) {
         };
         match = k.hasMoved ? [
             Utils.withMoved(Utils.withPosition(piece, position)),
-            undefined
+            noop
           ] : (
             newX === 2 && newY === backRowY ? [
                 Utils.withMoved(Utils.withPosition(piece, position)),
@@ -112,7 +115,7 @@ function confirmMove(board, piece, position) {
                     castleHelper(7, 5, board)
                   ] : [
                     Utils.withMoved(Utils.withPosition(piece, position)),
-                    undefined
+                    noop
                   ]
               )
           );
@@ -120,30 +123,24 @@ function confirmMove(board, piece, position) {
     default:
       match = [
         Utils.withMoved(Utils.withPosition(piece, position)),
-        undefined
+        noop
       ];
   }
-  var callback$1 = match[1];
-  var pieces_0 = match[0];
+  var newPiece = match[0];
   var pieces_1 = Belt_List.keep(board.pieces, (function (p) {
-          if (Utils.getX(p) !== Utils.getX(piece) || Utils.getY(p) !== Utils.getY(piece) || Utils.getX(p) !== newX) {
-            return true;
+          if (Utils.getX(p) === Utils.getX(piece) && Utils.getY(p) === Utils.getY(piece)) {
+            return false;
           } else {
-            return Utils.getY(p) !== newY;
+            return !(Utils.getX(p) === Utils.getX(newPiece) && Utils.getY(p) === Utils.getX(newPiece));
           }
         }));
   var pieces = {
-    hd: pieces_0,
+    hd: newPiece,
     tl: pieces_1
   };
-  var newBoard = {
-    pieces: pieces
-  };
-  if (callback$1 !== undefined) {
-    return Curry._1(callback$1, newBoard);
-  } else {
-    return newBoard;
-  }
+  return Curry._1(match[1], {
+              pieces: pieces
+            });
 }
 
 exports.getPiece = getPiece;

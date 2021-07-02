@@ -22,25 +22,24 @@ let hasOppositeColoredPiece = (board, position, color) => {
   hasPiece(board, position, Some(oppositeColor(color)))
 }
 
-let checkUnobstructed = (board, piece, (x,y), canCapture) => {
+let checkUnobstructed = (board, piece, (x, y), canCapture) => {
   if x < 0 || x > 7 || y < 0 || y > 7 {
     false
-  } else {
-    if canCapture {
-      let target = getPiece(board, (x,y), None)
-      switch target {
-        |Some(King(_)) => false
-        |Some(p) => getColor(p) !== piece["color"]
-        |None => true
-      }
-    } else {
-      !hasPiece(board, (x,y), None)
+  } else if canCapture {
+    let target = getPiece(board, (x, y), None)
+    switch target {
+    | Some(King(_)) => false
+    | Some(p) => getColor(p) !== piece["color"]
+    | None => true
     }
+  } else {
+    !hasPiece(board, (x, y), None)
   }
 }
 
 let rec confirmMove = (board, piece, position) => {
   let (newX, newY) = position
+  let noop = b => b
   let (newPiece, callback) = switch piece {
   | Pawn(p) => {
       let newPawn = if p["y"] - newY === -2 || p["y"] - newY === 2 {
@@ -49,15 +48,13 @@ let rec confirmMove = (board, piece, position) => {
         withPosition(piece, position)->withMoved
       }
       // en passant
-      let callback = if p["x"] !== newX && p["y"] !== newY && hasPiece(board, position, None) {
-        Some(
-          b =>
-            {
-              "pieces": List.keep(b["pieces"], i => getX(i) !== newX || getY(i) !== p["y"]),
-            },
-        )
+      let callback = if p["x"] !== newX && p["y"] !== newY && !hasPiece(board, position, None) {
+        b =>
+          {
+            "pieces": List.keep(b["pieces"], i => getX(i) !== newX || getY(i) !== p["y"]),
+          }
       } else {
-        None
+        noop
       }
       (newPawn, callback)
     }
@@ -75,32 +72,29 @@ let rec confirmMove = (board, piece, position) => {
       }
       if !k["hasMoved"] {
         if newX === 2 && newY === backRowY {
-          (withPosition(piece, position)->withMoved, Some(castleHelper(0, 3, board)))
+          (withPosition(piece, position)->withMoved, castleHelper(0, 3, board))
         } else if newX === 6 && newY === backRowY {
-          (withPosition(piece, position)->withMoved, Some(castleHelper(7, 5, board)))
+          (withPosition(piece, position)->withMoved, castleHelper(7, 5, board))
         } else {
-          (withPosition(piece, position)->withMoved, None)
+          (withPosition(piece, position)->withMoved, noop)
         }
       } else {
-        (withPosition(piece, position)->withMoved, None)
+        (withPosition(piece, position)->withMoved, noop)
       }
     }
   | Queen(_)
   | Bishop(_)
   | Knight(_)
-  | Rook(_) => (withPosition(piece, position)->withMoved, None)
+  | Rook(_) => (withPosition(piece, position)->withMoved, noop)
   }
   let pieces = list{
     newPiece,
     ...List.keep(board["pieces"], p => {
-      getX(p) !== getX(piece) || getY(p) !== getY(piece) || (getX(p) !== newX || getY(p) !== newY)
+      !(getX(p) === getX(piece) && getY(p) === getY(piece)) &&
+      !(getX(p) === getX(newPiece) && getY(p) === getX(newPiece))
     }),
   }
-  let newBoard = {
+  callback({
     "pieces": pieces,
-  }
-  switch callback {
-  | Some(c) => c(newBoard)
-  | None => newBoard
-  }
+  })
 }

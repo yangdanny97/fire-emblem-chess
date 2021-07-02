@@ -1,6 +1,9 @@
 import * as Utils from './Utils.bs.js';
 import * as Board from './Board.bs.js';
 import * as Pieces from './Pieces.bs.js';
+
+var Belt_List = require("rescript/lib/js/belt_List.js");
+
 // util function for converting 0,0 -> A1, etc.
 function positionToId(x, y) {
     return `${String.fromCharCode(x + 65)}${y + 1}`;
@@ -25,29 +28,9 @@ class Tags {
 
 // adapt to rescript
 class Adapters {
-    static buildList(arr) {
-        arr = arr.map(a => a).reverse();
-        var lst = 0;
-        for (var i = 0; i < arr.length; i++) {
-            lst = {
-                hd: arr[i],
-                tl: lst
-            }
-        }
-        return lst;
-    }
-
-    static buildArray(lst) {
-        if (lst === 0 || lst === undefined) {
-            return [];
-        } else {
-            return [lst.hd, ...Adapters.buildArray(lst.tl)];
-        }
-    }
-
     static board(pieces) {
         return {
-            pieces: Adapters.buildList(pieces),
+            pieces: Belt_List.fromArray(pieces),
         }
     }
 
@@ -269,15 +252,15 @@ class Game {
         var color = this.turn;
         // make sure player is not checkmated
         var otherColor = Utils.oppositeColor(color);
-        var ownKing = Adapters.buildArray(this.board.pieces).filter(
+        var ownKing = Belt_List.toArray(this.board.pieces).filter(
             p => p._0.color === color && p.TAG === 1 // king
         )[0];
-        var otherCoveredPositions = Adapters.buildArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
+        var otherCoveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
         var ownKingInCheck = otherCoveredPositions
             .find(p => p[0] === ownKing._0.x && p[1] === ownKing._0.y) !== undefined;
-        var legalMoves = Adapters.buildArray(this.board.pieces).filter(
+        var legalMoves = Belt_List.toArray(this.board.pieces).filter(
             p => p._0.color === color
-        ).reduce((acc, p) => acc + Adapters.buildArray(Pieces.getLegalMoves(p, this.board)).length, 0);
+        ).reduce((acc, p) => acc + Belt_List.size(Pieces.getLegalMoves(p, this.board)), 0);
         if (legalMoves === 0) {
             // lock the game for now
             this.winSound();
@@ -340,7 +323,8 @@ class Game {
             } else if (piece._0.color === this.turn) {
                 // select friendly piece
                 this.selectedPiece = piece;
-                this.legalMoves = Adapters.buildArray(Pieces.getLegalMoves(piece, this.board));
+                this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(piece, this.board));
+                console.log(this.legalMoves);
                 this.successSound();
                 this.draw();
             } else {
@@ -364,11 +348,11 @@ class Game {
                 );
                 if (legalMove.length > 0) {
                     var move = legalMove[0];
-                    var pieces = Adapters.buildArray(this.board.pieces).length;
+                    var pieces = Belt_List.size(this.board.pieces);
                     this.lock = true;
                     this.board = Board.confirmMove(this.board, this.selectedPiece, move);
                     // end confirm move logic
-                    if (pieces > Adapters.buildArray(this.board.pieces).length) {
+                    if (pieces > Belt_List.size(this.board.pieces)) {
                         this.captureSound();
                     } else {
                         this.moveSound();
@@ -389,7 +373,7 @@ class Game {
                     this.cursorPosition[1] !== this.selectedPiece._0.y
                 ) {
                     this.selectedPiece = target_piece;
-                    this.legalMoves = Adapters.buildArray(Pieces.getLegalMoves(target_piece, this.board));
+                    this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(target_piece, this.board));
                     this.successSound();
                     this.draw();
                 }
@@ -484,7 +468,7 @@ class Game {
 
     handlePromote(key) {
         if (!this.promote) return;
-        var piece;
+        var piece = null;
         switch (key) {
             case 66: // B
                 piece = Adapters.bishop(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
@@ -499,9 +483,15 @@ class Game {
                 piece = Adapters.queen(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
         }
-        var pieces = Adapters.buildArray(this.board.pieces).filter(p => p._0.x != piece._0.x || p._0.y != piece._0.y);
-        pieces.push(piece);
-        this.board.pieces = Adapters.buildList(pieces);
+        if (piece === null) {
+            this.failureSound();
+            return;
+        }
+        var pieces = Belt_List.keep(this.board.pieces, p => p._0.x != piece._0.x || p._0.y != piece._0.y);
+        this.board.pieces = {
+            hd: piece,
+            tl: pieces,
+        };
         this.promote = false;
         this.winSound(); // TODO - get unique promote sound
         this.draw();
@@ -510,8 +500,8 @@ class Game {
 
     draw() {
         var otherColor = Utils.oppositeColor(this.turn);
-        var coveredPositions = Adapters.buildArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
-        var emphasizedCoveredPositions = Adapters.buildArray(Pieces.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
+        var coveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
+        var emphasizedCoveredPositions = Belt_List.toArray(Pieces.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
 
         var grid = [];
         for (var i = 0; i < 8; i++) {
@@ -522,7 +512,7 @@ class Game {
             grid.push(row);
         }
 
-        Adapters.buildArray(this.board.pieces).forEach(p => {
+        Belt_List.toArray(this.board.pieces).forEach(p => {
             grid[p._0.x][p._0.y].piece = p;
         });
 

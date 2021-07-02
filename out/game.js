@@ -367,12 +367,15 @@ function checkUnobstructed(board, piece, param, canCapture) {
 function confirmMove(board, piece, position) {
   var newY = position[1];
   var newX = position[0];
+  var noop = function (b) {
+    return b;
+  };
   var match;
   switch (piece.TAG | 0) {
     case /* Pawn */0 :
         var p = piece._0;
         var newPawn = (p.y - newY | 0) === -2 || (p.y - newY | 0) === 2 ? Utils.withPosition(Utils.with2Spaces(p), position) : Utils.withMoved(Utils.withPosition(piece, position));
-        var callback = p.x !== newX && p.y !== newY && hasPiece(board, position, undefined) ? (function (b) {
+        var callback = p.x !== newX && p.y !== newY && !hasPiece(board, position, undefined) ? (function (b) {
               return {
                       pieces: Belt_List.keep(b.pieces, (function (i) {
                               if (Utils.getX(i) !== newX) {
@@ -382,7 +385,7 @@ function confirmMove(board, piece, position) {
                               }
                             }))
                     };
-            }) : undefined;
+            }) : noop;
         match = [
           newPawn,
           callback
@@ -412,7 +415,7 @@ function confirmMove(board, piece, position) {
         };
         match = k.hasMoved ? [
             Utils.withMoved(Utils.withPosition(piece, position)),
-            undefined
+            noop
           ] : (
             newX === 2 && newY === backRowY ? [
                 Utils.withMoved(Utils.withPosition(piece, position)),
@@ -423,7 +426,7 @@ function confirmMove(board, piece, position) {
                     castleHelper(7, 5, board)
                   ] : [
                     Utils.withMoved(Utils.withPosition(piece, position)),
-                    undefined
+                    noop
                   ]
               )
           );
@@ -431,30 +434,24 @@ function confirmMove(board, piece, position) {
     default:
       match = [
         Utils.withMoved(Utils.withPosition(piece, position)),
-        undefined
+        noop
       ];
   }
-  var callback$1 = match[1];
-  var pieces_0 = match[0];
+  var newPiece = match[0];
   var pieces_1 = Belt_List.keep(board.pieces, (function (p) {
-          if (Utils.getX(p) !== Utils.getX(piece) || Utils.getY(p) !== Utils.getY(piece) || Utils.getX(p) !== newX) {
-            return true;
+          if (Utils.getX(p) === Utils.getX(piece) && Utils.getY(p) === Utils.getY(piece)) {
+            return false;
           } else {
-            return Utils.getY(p) !== newY;
+            return !(Utils.getX(p) === Utils.getX(newPiece) && Utils.getY(p) === Utils.getX(newPiece));
           }
         }));
   var pieces = {
-    hd: pieces_0,
+    hd: newPiece,
     tl: pieces_1
   };
-  var newBoard = {
-    pieces: pieces
-  };
-  if (callback$1 !== undefined) {
-    return Curry._1(callback$1, newBoard);
-  } else {
-    return newBoard;
-  }
+  return Curry._1(match[1], {
+              pieces: pieces
+            });
 }
 
 exports.getPiece = getPiece;
@@ -4227,43 +4224,7 @@ function canCover(piece, board, position) {
   }
 }
 
-function getUnobstructedCardinalPositions(piece, board) {
-  var up = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) === piece.x) {
-                return Utils.getY(p) > piece.y;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
-        }));
-  var down = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) === piece.x) {
-                return Utils.getY(p) < piece.y;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
-        }));
-  var left = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getY(p) === piece.y) {
-                return Utils.getX(p) < piece.x;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getX(b) - Utils.getX(a) | 0;
-        }));
-  var right = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getY(p) === piece.y) {
-                return Utils.getX(p) > piece.x;
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getX(a) - Utils.getX(b) | 0;
-        }));
+function unobstructedPositionsHelper(piece, board, a, b, c, d) {
   var positionHelper = function (acc, position) {
     if (!acc[0]) {
       return [
@@ -4298,123 +4259,84 @@ function getUnobstructedCardinalPositions(piece, board) {
     }
   };
   return Belt_List.flatten(Belt_List.map({
-                  hd: up,
+                  hd: a,
                   tl: {
-                    hd: down,
+                    hd: b,
                     tl: {
-                      hd: left,
+                      hd: c,
                       tl: {
-                        hd: right,
+                        hd: d,
                         tl: /* [] */0
                       }
                     }
                   }
                 }, (function (l) {
-                    return Belt_List.reduce(Belt_List.map(l, (function (i) {
-                                        return [
-                                                Utils.getX(i),
-                                                Utils.getY(i)
-                                              ];
-                                      })), [
+                    return Belt_List.reduce(l, [
                                   true,
                                   /* [] */0
                                 ], positionHelper)[1];
                   })));
 }
 
+function getUnobstructedCardinalPositions(piece, board) {
+  var up = Belt_List.makeBy(7 - piece.y | 0, (function (i) {
+          return [
+                  piece.x,
+                  (piece.y + i | 0) + 1 | 0
+                ];
+        }));
+  var down = Belt_List.makeBy(piece.y, (function (i) {
+          return [
+                  piece.x,
+                  (piece.y - i | 0) - 1 | 0
+                ];
+        }));
+  var left = Belt_List.makeBy(piece.x, (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  piece.y
+                ];
+        }));
+  var right = Belt_List.makeBy(7 - piece.x | 0, (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  piece.y
+                ];
+        }));
+  return unobstructedPositionsHelper(piece, board, up, down, left, right);
+}
+
 function getUnobstructedDiagonalPositions(piece, board) {
-  var ul = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) < piece.x && Utils.getY(p) > piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
+  console.log("AAA");
+  var ul = Belt_List.makeBy(Math.min(piece.x, 7 - piece.y | 0), (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  (piece.y + i | 0) + 1 | 0
+                ];
         }));
-  var ur = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) > piece.x && Utils.getY(p) > piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(a) - Utils.getY(b) | 0;
+  console.log(Belt_List.toArray(ul));
+  var ur = Belt_List.makeBy(7 - Math.max(piece.x, piece.y) | 0, (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  (piece.y + i | 0) + 1 | 0
+                ];
         }));
-  var dl = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) < piece.x && Utils.getY(p) < piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
+  console.log(Belt_List.toArray(ur));
+  var dl = Belt_List.makeBy(Math.min(piece.x, piece.y), (function (i) {
+          return [
+                  (piece.x - i | 0) - 1 | 0,
+                  (piece.y - i | 0) - 1 | 0
+                ];
         }));
-  var dr = Belt_List.sort(Belt_List.keep(board.pieces, (function (p) {
-              if (Utils.getX(p) > piece.x && Utils.getY(p) < piece.y) {
-                return (Utils.getX(p) - Utils.getY(p) | 0) === (piece.x - piece.y | 0);
-              } else {
-                return false;
-              }
-            })), (function (a, b) {
-          return Utils.getY(b) - Utils.getY(a) | 0;
+  console.log(Belt_List.toArray(dl));
+  var dr = Belt_List.makeBy(Math.min(7 - piece.x | 0, piece.y), (function (i) {
+          return [
+                  (piece.x + i | 0) + 1 | 0,
+                  (piece.y - i | 0) - 1 | 0
+                ];
         }));
-  var positionHelper = function (acc, position) {
-    if (!acc[0]) {
-      return [
-              false,
-              acc[1]
-            ];
-    }
-    var lst = acc[1];
-    if (canCover(piece, board, position)) {
-      if (Board.hasPiece(board, position, undefined)) {
-        return [
-                false,
-                {
-                  hd: position,
-                  tl: lst
-                }
-              ];
-      } else {
-        return [
-                true,
-                {
-                  hd: position,
-                  tl: lst
-                }
-              ];
-      }
-    } else {
-      return [
-              false,
-              lst
-            ];
-    }
-  };
-  return Belt_List.flatten(Belt_List.map({
-                  hd: ul,
-                  tl: {
-                    hd: ur,
-                    tl: {
-                      hd: dl,
-                      tl: {
-                        hd: dr,
-                        tl: /* [] */0
-                      }
-                    }
-                  }
-                }, (function (l) {
-                    return Belt_List.reduce(Belt_List.map(l, (function (i) {
-                                        return [
-                                                Utils.getX(i),
-                                                Utils.getY(i)
-                                              ];
-                                      })), [
-                                  true,
-                                  /* [] */0
-                                ], positionHelper)[1];
-                  })));
+  console.log(Belt_List.toArray(dr));
+  return unobstructedPositionsHelper(piece, board, ul, ur, dl, dr);
 }
 
 function getCoveredPositions(piece, board) {
@@ -4576,6 +4498,27 @@ function getCoveredPositionsForColor(board, color) {
                   })), board);
 }
 
+function validBoard(board, movedColor) {
+  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
+              if (p.TAG === /* King */1) {
+                return p._0.color === movedColor;
+              } else {
+                return false;
+              }
+            })), 0);
+  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
+  return !Belt_List.has(otherCoveredPositions, [
+              Utils.getX(ownKing),
+              Utils.getY(ownKing)
+            ], (function (param, param$1) {
+                if (param[0] === param$1[0]) {
+                  return param[1] === param$1[1];
+                } else {
+                  return false;
+                }
+              }));
+}
+
 function coveredPositionsHelper(pieces, board) {
   return Belt_List.reduce(Belt_List.sort(Belt_List.flatten(Belt_List.reduce(pieces, /* [] */0, (function (acc, p) {
                             return {
@@ -4617,27 +4560,6 @@ function coveredPositionsHelper(pieces, board) {
               }));
 }
 
-function validBoard(board, movedColor) {
-  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
-              if (p.TAG === /* King */1) {
-                return true;
-              } else {
-                return false;
-              }
-            })), 1);
-  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
-  return !Belt_List.has(otherCoveredPositions, [
-              Utils.getX(ownKing),
-              Utils.getY(ownKing)
-            ], (function (param, param$1) {
-                if (param[0] === param$1[0]) {
-                  return param[1] === param$1[1];
-                } else {
-                  return false;
-                }
-              }));
-}
-
 function validStateForMove(board, piece, position) {
   var newBoard = Board.confirmMove(board, piece, position);
   return validBoard(newBoard, Utils.getColor(piece));
@@ -4660,7 +4582,7 @@ function getLegalMoves(piece, board) {
           twoSpace_1
         ];
         var movement = Board.checkUnobstructed(board, p, oneSpace, false) ? (
-            p.hasMoved && Board.checkUnobstructed(board, p, twoSpace, false) ? ({
+            !p.hasMoved && Board.checkUnobstructed(board, p, twoSpace, false) ? ({
                   hd: oneSpace,
                   tl: {
                     hd: twoSpace,
@@ -4694,7 +4616,11 @@ function getLegalMoves(piece, board) {
     case /* King */1 :
         var k = piece._0;
         var regularMoves = Belt_List.keep(getCoveredPositions(piece, board), (function (p) {
-                return validStateForMove(board, piece, p);
+                if (Board.checkUnobstructed(board, k, p, true)) {
+                  return validStateForMove(board, piece, p);
+                } else {
+                  return false;
+                }
               }));
         if (k.hasMoved || k.inCheck) {
           return regularMoves;
@@ -4774,8 +4700,13 @@ function getLegalMoves(piece, board) {
           return regularMoves;
         }
     default:
+      var x = piece._0;
       return Belt_List.keep(getCoveredPositions(piece, board), (function (pos) {
-                    return validStateForMove(board, piece, pos);
+                    if (Board.checkUnobstructed(board, x, pos, true)) {
+                      return validStateForMove(board, piece, pos);
+                    } else {
+                      return false;
+                    }
                   }));
   }
 }
@@ -4791,6 +4722,7 @@ function getEmphasizedCoveredPositionsForColor(board, color) {
 }
 
 exports.canCover = canCover;
+exports.unobstructedPositionsHelper = unobstructedPositionsHelper;
 exports.getUnobstructedCardinalPositions = getUnobstructedCardinalPositions;
 exports.getUnobstructedDiagonalPositions = getUnobstructedDiagonalPositions;
 exports.getCoveredPositions = getCoveredPositions;
@@ -4870,6 +4802,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var Belt_List = __webpack_require__(5);
+
 // util function for converting 0,0 -> A1, etc.
 function positionToId(x, y) {
     return `${String.fromCharCode(x + 65)}${y + 1}`;
@@ -4894,29 +4829,9 @@ class Tags {
 
 // adapt to rescript
 class Adapters {
-    static buildList(arr) {
-        arr = arr.map(a => a).reverse();
-        var lst = 0;
-        for (var i = 0; i < arr.length; i++) {
-            lst = {
-                hd: arr[i],
-                tl: lst
-            }
-        }
-        return lst;
-    }
-
-    static buildArray(lst) {
-        if (lst === 0 || lst === undefined) {
-            return [];
-        } else {
-            return [lst.hd, ...Adapters.buildArray(lst.tl)];
-        }
-    }
-
     static board(pieces) {
         return {
-            pieces: Adapters.buildList(pieces),
+            pieces: Belt_List.fromArray(pieces),
         }
     }
 
@@ -5138,15 +5053,15 @@ class Game {
         var color = this.turn;
         // make sure player is not checkmated
         var otherColor = _Utils_bs_js__WEBPACK_IMPORTED_MODULE_0__.oppositeColor(color);
-        var ownKing = Adapters.buildArray(this.board.pieces).filter(
+        var ownKing = Belt_List.toArray(this.board.pieces).filter(
             p => p._0.color === color && p.TAG === 1 // king
         )[0];
-        var otherCoveredPositions = Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getCoveredPositionsForColor(this.board, otherColor));
+        var otherCoveredPositions = Belt_List.toArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getCoveredPositionsForColor(this.board, otherColor));
         var ownKingInCheck = otherCoveredPositions
             .find(p => p[0] === ownKing._0.x && p[1] === ownKing._0.y) !== undefined;
-        var legalMoves = Adapters.buildArray(this.board.pieces).filter(
+        var legalMoves = Belt_List.toArray(this.board.pieces).filter(
             p => p._0.color === color
-        ).reduce((acc, p) => acc + Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(p, this.board)).length, 0);
+        ).reduce((acc, p) => acc + Belt_List.size(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(p, this.board)), 0);
         if (legalMoves === 0) {
             // lock the game for now
             this.winSound();
@@ -5209,7 +5124,8 @@ class Game {
             } else if (piece._0.color === this.turn) {
                 // select friendly piece
                 this.selectedPiece = piece;
-                this.legalMoves = Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(piece, this.board));
+                this.legalMoves = Belt_List.toArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(piece, this.board));
+                console.log(this.legalMoves);
                 this.successSound();
                 this.draw();
             } else {
@@ -5233,11 +5149,11 @@ class Game {
                 );
                 if (legalMove.length > 0) {
                     var move = legalMove[0];
-                    var pieces = Adapters.buildArray(this.board.pieces).length;
+                    var pieces = Belt_List.size(this.board.pieces);
                     this.lock = true;
                     this.board = _Board_bs_js__WEBPACK_IMPORTED_MODULE_1__.confirmMove(this.board, this.selectedPiece, move);
                     // end confirm move logic
-                    if (pieces > Adapters.buildArray(this.board.pieces).length) {
+                    if (pieces > Belt_List.size(this.board.pieces)) {
                         this.captureSound();
                     } else {
                         this.moveSound();
@@ -5258,7 +5174,7 @@ class Game {
                     this.cursorPosition[1] !== this.selectedPiece._0.y
                 ) {
                     this.selectedPiece = target_piece;
-                    this.legalMoves = Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(target_piece, this.board));
+                    this.legalMoves = Belt_List.toArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getLegalMoves(target_piece, this.board));
                     this.successSound();
                     this.draw();
                 }
@@ -5353,7 +5269,7 @@ class Game {
 
     handlePromote(key) {
         if (!this.promote) return;
-        var piece;
+        var piece = null;
         switch (key) {
             case 66: // B
                 piece = Adapters.bishop(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
@@ -5368,9 +5284,15 @@ class Game {
                 piece = Adapters.queen(this.selectedPiece.color, this.selectedPiece._0.x, this.selectedPiece._0.y);
                 break;
         }
-        var pieces = Adapters.buildArray(this.board.pieces).filter(p => p._0.x != piece._0.x || p._0.y != piece._0.y);
-        pieces.push(piece);
-        this.board.pieces = Adapters.buildList(pieces);
+        if (piece === null) {
+            this.failureSound();
+            return;
+        }
+        var pieces = Belt_List.keep(this.board.pieces, p => p._0.x != piece._0.x || p._0.y != piece._0.y);
+        this.board.pieces = {
+            hd: piece,
+            tl: pieces,
+        };
         this.promote = false;
         this.winSound(); // TODO - get unique promote sound
         this.draw();
@@ -5379,8 +5301,8 @@ class Game {
 
     draw() {
         var otherColor = _Utils_bs_js__WEBPACK_IMPORTED_MODULE_0__.oppositeColor(this.turn);
-        var coveredPositions = Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getCoveredPositionsForColor(this.board, otherColor));
-        var emphasizedCoveredPositions = Adapters.buildArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
+        var coveredPositions = Belt_List.toArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getCoveredPositionsForColor(this.board, otherColor));
+        var emphasizedCoveredPositions = Belt_List.toArray(_Pieces_bs_js__WEBPACK_IMPORTED_MODULE_2__.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
 
         var grid = [];
         for (var i = 0; i < 8; i++) {
@@ -5391,7 +5313,7 @@ class Game {
             grid.push(row);
         }
 
-        Adapters.buildArray(this.board.pieces).forEach(p => {
+        Belt_List.toArray(this.board.pieces).forEach(p => {
             grid[p._0.x][p._0.y].piece = p;
         });
 
