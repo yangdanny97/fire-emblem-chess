@@ -32,6 +32,7 @@ type board = {pieces: list<pieces>}
 
 let scalingFactor = 4
 let assetSize = 23
+let gridSize = scalingFactor * assetSize
 
 let oppositeColor = color => {
   switch color {

@@ -1,16 +1,23 @@
 import * as Utils from './Utils.bs.js';
 import * as Board from './Board.bs.js';
 import * as Pieces from './Pieces.bs.js';
+import * as Grid from './Grid.bs.js';
 
 var Belt_List = require("rescript/lib/js/belt_List.js");
 
-// util function for converting 0,0 -> A1, etc.
-function positionToId(x, y) {
-    return `${String.fromCharCode(x + 65)}${y + 1}`;
-}
+var svg = d3.select("#board");
 
-const ScalingFactor = 4;
-const AssetSize = 23;
+// var posX;
+// var posY;
+// if (d.turnColor === Colors.white) {
+//     // A1 is bottom left
+//     posX = d.x * gridSize;
+//     posY = (7 - d.y) * gridSize;
+// } else {
+//     // A1 is top right
+//     posX = (7 - d.x) * gridSize;
+//     posY = d.y * gridSize;
+// }
 
 class Colors {
     static white = 0;
@@ -243,7 +250,7 @@ class Game {
             }),
         }
         this.handleTurnStart();
-        this.draw();
+        this.makeGridAndDraw();
     }
 
     handleTurnStart() {
@@ -273,7 +280,7 @@ class Game {
             return;
         }
         this.turnStartSound();
-        this.draw();
+        this.makeGridAndDraw();
     }
 
     winSound() {
@@ -325,12 +332,12 @@ class Game {
                 this.selectedPiece = piece;
                 this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(piece, this.board));
                 this.successSound();
-                this.draw();
+                this.makeGridAndDraw();
             } else {
                 // select enemy piece - toggle cover range highlight
                 piece._0.emphasizeCoverRange = !Utils.getEmphasis(piece);
                 this.successSound();
-                this.draw();
+                this.makeGridAndDraw();
             }
         } else {
             // friendly piece already selected
@@ -360,7 +367,7 @@ class Game {
                     } else {
                         this.moveSound();
                     }
-                    this.draw();
+                    this.makeGridAndDraw();
                     if (this.selectedPiece.TAG === Tags.pawn && move[1] === Utils.promotionRank(this.selectedPiece._0)) {
                         this.promote = true;
                     } else {
@@ -378,7 +385,7 @@ class Game {
                     this.selectedPiece = target_piece;
                     this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(target_piece, this.board));
                     this.successSound();
-                    this.draw();
+                    this.makeGridAndDraw();
                 }
             }
         }
@@ -398,7 +405,7 @@ class Game {
             this.successSound();
             this.selectedPiece = null;
             this.legalMoves = null;
-            this.draw();
+            this.makeGridAndDraw();
         } else {
             this.failureSound();
         }
@@ -466,7 +473,7 @@ class Game {
 
     handleMoveCursor() {
         this.cursorSound();
-        this.draw();
+        this.makeGridAndDraw();
     }
 
     handlePromote(key) {
@@ -500,11 +507,11 @@ class Game {
         };
         this.promote = false;
         this.winSound(); // TODO - get unique promote sound
-        this.draw();
+        this.makeGridAndDraw();
         this.endTurn();
     }
 
-    draw() {
+    makeGridAndDraw() {
         var otherColor = Utils.oppositeColor(this.turn);
         var coveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
         var emphasizedCoveredPositions = Belt_List.toArray(Pieces.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
@@ -526,82 +533,52 @@ class Game {
             grid[p[0]][p[1]].covered = true;
         });
         emphasizedCoveredPositions.forEach(p => {
-            grid[p[0]][p[1]].covered2 = true;
+            grid[p[0]][p[1]].coveredAndSelected = true;
         });
 
         grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
         if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
             grid[Utils.getX(this.selectedPiece)][Utils.getY(this.selectedPiece)].selection = true;
-                if (this.legalMoves !== null) {
+            if (this.legalMoves !== null) {
                 this.legalMoves.forEach(p => {
                     grid[p[0]][p[1]].movement = true;
                 });
             }
         }
-        var svg = d3.select("#board");
-        svg.selectAll('*').remove();
-        grid.forEach(row => {
-            row.forEach(x => x.draw(svg));
-        });
-    }
-}
-
-class Grid {
-    // class for rendering a grid in the chess board
-    constructor(x, y, turnColor) {
-        this.piece = null;
-        this.selection = false;
-        this.covered = false;
-        this.covered2 = false;
-        this.movement = false;
-        this.x = x;
-        this.y = y;
-        this.turnColor = turnColor;
+        this.drawGrid(grid.flat());
     }
 
-    draw(svg) {
-        var gridSize = ScalingFactor * AssetSize;
-        // starting position for cursor - top left of box
-        var posX;
-        var posY;
-        if (this.turnColor === Colors.white) {
-            // A1 is bottom left
-            posX = this.x * gridSize;
-            posY = (7 - this.y) * gridSize;
-        } else {
-            // A1 is top right
-            posX = (7 - this.x) * gridSize;
-            posY = this.y * gridSize;
-        }
-        var g = svg.append("g")
-            .attr("class", positionToId(this.x, this.y));
+    drawGrid(data) {
+        var grid = svg.selectAll(".grid")
+            .data(data, g => g.id)
+            .join("g");
 
         // draw base square
-        var inCheck = this.piece !== undefined && this.piece !== null && this.piece.TAG === Tags.king &&
-            Utils.getColor(this.piece) === this.turnColor && this.covered;
-        var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
-        g.append("rect")
+        var inCheck = d => d.piece !== undefined && d.piece !== null && d.piece.TAG === Tags.king &&
+            Utils.getColor(d.piece) === d.turnColor && d.covered;
+        var color = d => (d.x % 2 === d.y % 2) ? "maroon" : "antiquewhite";
+        grid.append("rect")
             .attr("width", gridSize)
             .attr("height", gridSize)
             .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", inCheck ? "red" : color);
+            .attr("fill", d => inCheck(d) ? "red" : color(d));
 
         // draw overlay (movement and cover)
         var overlayColor = null;
-        if (this.covered2 && !this.movement && !inCheck) {
+        if (d.coveredAndSelected && !d.movement && !inCheck) {
             overlayColor = "red";
         } else if (
-            this.covered && this.piece !== null &&
-            !inCheck && !this.movement
+            d.covered && d.piece !== null &&
+            !inCheck && !d.movement
         ) {
             overlayColor = "lightcoral";
-        } else if (this.movement && this.covered) {
+        } else if (d.movement && d.covered) {
             overlayColor = "purple";
-        } else if (this.movement) {
+        } else if (d.movement) {
             overlayColor = "blue";
         }
         if (overlayColor !== null) {
-            g.append("rect")
+            grid.append("rect")
                 .attr("width", gridSize)
                 .attr("height", gridSize)
                 .attr("transform", `translate(${posX} ${posY})`)
@@ -610,19 +587,19 @@ class Grid {
         }
 
         // sprite
-        if (this.piece !== undefined && this.piece !== null) {
-            g.append("image")
+        if (d.piece !== undefined && d.piece !== null) {
+            grid.append("image")
                 .attr("transform", `translate(${posX} ${posY})`)
                 .attr("width", gridSize)
                 .attr("height", gridSize)
-                .attr("id", positionToId(this.x, this.y))
-                .attr("xlink:href", `./${Utils.getAsset(this.piece)}.gif`);
+                .attr("id", positionToId(d.x, d.y))
+                .attr("xlink:href", `./${Utils.getAsset(d.piece)}.gif`);
         }
 
         // selection box
-        if (this.selection) {
+        if (d.selection) {
             var stroke = ScalingFactor * 3;
-            g.append("rect")
+            grid.append("rect")
                 .attr("width", gridSize - stroke)
                 .attr("height", gridSize - stroke)
                 .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
@@ -633,6 +610,8 @@ class Grid {
         }
     }
 }
+
+
 
 window.onload = () => {
     var game = new Game();
