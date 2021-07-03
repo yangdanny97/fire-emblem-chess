@@ -367,7 +367,7 @@ class Game {
                     } else {
                         this.moveSound();
                     }
-                    this.makeGridAndDraw();
+                    this.draw();
                     if (this.selectedPiece.TAG === Tags.pawn && move[1] === Utils.promotionRank(this.selectedPiece._0)) {
                         this.promote = true;
                     } else {
@@ -511,6 +511,11 @@ class Game {
         this.endTurn();
     }
 
+    draw() {
+        var grid = Grid.makeGrid(this.board); // TODO
+        this.drawGrid(grid);
+    }
+
     makeGridAndDraw() {
         var otherColor = Utils.oppositeColor(this.turn);
         var coveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
@@ -537,15 +542,21 @@ class Game {
         });
 
         grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
-        if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
-            grid[Utils.getX(this.selectedPiece)][Utils.getY(this.selectedPiece)].selection = true;
-            if (this.legalMoves !== null) {
-                this.legalMoves.forEach(p => {
-                    grid[p[0]][p[1]].movement = true;
-                });
+        if (this.selectedPiece !== null) {
+            grid[this.selectedPiece.x][this.selectedPiece.y].selection = true;
+            this.legalMoves.forEach(p => {
+                grid[p[0]][p[1]].movement = true;
+            });
+            if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
+                grid[Utils.getX(this.selectedPiece)][Utils.getY(this.selectedPiece)].selection = true;
+                if (this.legalMoves !== null) {
+                    this.legalMoves.forEach(p => {
+                        grid[p[0]][p[1]].movement = true;
+                    });
+                }
             }
+            this.drawGrid(grid.flat());
         }
-        this.drawGrid(grid.flat());
     }
 
     drawGrid(data) {
@@ -554,6 +565,10 @@ class Game {
             .join("g");
 
         // draw base square
+        var inCheck = this.piece !== null && this.piece instanceof King &&
+            this.piece.color === this.turnColor && this.covered;
+        var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
+        g.append("rect")
         var inCheck = d => d.piece !== undefined && d.piece !== null && d.piece.TAG === Tags.king &&
             Utils.getColor(d.piece) === d.turnColor && d.covered;
         var color = d => (d.x % 2 === d.y % 2) ? "maroon" : "antiquewhite";
@@ -594,19 +609,27 @@ class Game {
                 .attr("height", gridSize)
                 .attr("id", positionToId(d.x, d.y))
                 .attr("xlink:href", `./${Utils.getAsset(d.piece)}.gif`);
-        }
+            if (this.piece !== null) {
+                g.append("image")
+                    .attr("transform", `translate(${posX} ${posY})`)
+                    .attr("width", gridSize)
+                    .attr("height", gridSize)
+                    .attr("id", positionToId(this.x, this.y))
+                    .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
+            }
 
-        // selection box
-        if (d.selection) {
-            var stroke = ScalingFactor * 3;
-            grid.append("rect")
-                .attr("width", gridSize - stroke)
-                .attr("height", gridSize - stroke)
-                .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
-                .attr("fill", "none")
-                .attr("stroke-width", `${stroke}px`)
-                .attr("class", "selection")
-                .attr("stroke", "goldenrod");
+            // selection box
+            if (d.selection) {
+                var stroke = ScalingFactor * 3;
+                grid.append("rect")
+                    .attr("width", gridSize - stroke)
+                    .attr("height", gridSize - stroke)
+                    .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
+                    .attr("fill", "none")
+                    .attr("stroke-width", `${stroke}px`)
+                    .attr("class", "selection")
+                    .attr("stroke", "goldenrod");
+            }
         }
     }
 }
