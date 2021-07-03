@@ -62,6 +62,8 @@ I used sounds from the GBA games and Fire Emblem Heroes.
 
 I wasn't sure how to extract the necessary data to display which squares are covered by an enemy piece and keep it updated as the cursor moves, so I figured it wouldn't be too hard to just write a chess library myself. Back when I TA'ed a functional programming class in college, a few students submitted terminal-based chess games as their final projects, so I thought it could be fun to build one myself. That said, this project isn't written completely in a functional style, although it might be fun to migrate everything to Reason one day.
 
+Update 7/2021: I've migrated more than half the codebase to Rescript, trying to keep things as pure/functional as I can. All the chess logic has been ported to Rescript, what remains is the control system & rendering.
+
 ### Why did I use D3 to render things instead of ___?
 
 D3 is normally supposed to be used for dynamic & interactive data visualizations, so it definitely feels weird to use it for a game. One reason is it's the library I'm most familiar with, and I quite like using it. The other reason is that D3 is a really powerful library that is good for interactive graphics, and simple games like chess are just visualizations of the board state - when viewed that way, it's actually surprisingly suitable for the task.
@@ -74,6 +76,6 @@ D3 is normally supposed to be used for dynamic & interactive data visualizations
 ### TODO
 - general styling of the webpage outside of the chess board
 - notifications/banners for turn start, checkmate, stalemate, etc.
-- optimize the rendering to properly use D3's data joins
 - support dumping and reading board states from ASCII
+- vim key bindings for cursor movement
 
