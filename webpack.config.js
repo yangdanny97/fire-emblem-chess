@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        game: './src/game.js'
+        game: './src/Game.js'
     },
     output: {
         filename: "game.js",

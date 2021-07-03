@@ -41,7 +41,7 @@ let makeGrid = (board, turnColor, (cursorX, cursorY), selectedPiece, legalMoves)
 
   let grid = Belt.Array.makeBy(8, x => Belt.Array.makeBy(8, y => makeSquare(x, y, turnColor)))
 
-  Belt.List.forEach(board["pieces"], p => {
+  Belt.List.forEach(board.pieces, p => {
     grid[getX(p)][getY(p)].piece = Some(p)
   })
 
@@ -68,7 +68,7 @@ let makeGrid = (board, turnColor, (cursorX, cursorY), selectedPiece, legalMoves)
 
 let getInCheck = square => {
   switch square.piece {
-  | Some(King(p)) => p["color"] === square.color && square.covered
+  | Some(King(p)) => p.color === square.color && square.covered
   | _ => false
   }
 }

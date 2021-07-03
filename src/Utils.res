@@ -3,22 +3,22 @@ type color =
   | Black
 
 type position = (int, int)
-type piece = {"x": int, "y": int, "color": color, "hasMoved": bool, "emphasizeCoverRange": bool}
+type piece = {x: int, y: int, color: color, hasMoved: bool, emphasizeCoverRange: bool}
 type king = {
-  "x": int,
-  "y": int,
-  "color": color,
-  "hasMoved": bool,
-  "emphasizeCoverRange": bool,
-  "inCheck": bool,
+  x: int,
+  y: int,
+  color: color,
+  hasMoved: bool,
+  emphasizeCoverRange: bool,
+  inCheck: bool,
 }
 type pawn = {
-  "x": int,
-  "y": int,
-  "color": color,
-  "hasMoved": bool,
-  "emphasizeCoverRange": bool,
-  "hasJustMoved2Spaces": bool,
+  x: int,
+  y: int,
+  color: color,
+  hasMoved: bool,
+  emphasizeCoverRange: bool,
+  hasJustMoved2Spaces: bool,
 }
 type pieces =
   | Pawn(pawn)
@@ -45,233 +45,172 @@ let colorName = color => {
 
 let getAsset = piece => {
   switch piece {
-  | Pawn(p) => `assets/${colorName(p["color"])}/pawn`
-  | King(k) => `assets/${colorName(k["color"])}/king`
-  | Queen(q) => `assets/${colorName(q["color"])}/queen`
-  | Bishop(b) => `assets/${colorName(b["color"])}/bishop`
-  | Knight(n) => `assets/${colorName(n["color"])}/knight`
-  | Rook(r) => `assets/${colorName(r["color"])}/rook`
+  | Pawn(p) => `assets/${colorName(p.color)}/pawn`
+  | King(k) => `assets/${colorName(k.color)}/king`
+  | Queen(q) => `assets/${colorName(q.color)}/queen`
+  | Bishop(b) => `assets/${colorName(b.color)}/bishop`
+  | Knight(n) => `assets/${colorName(n.color)}/knight`
+  | Rook(r) => `assets/${colorName(r.color)}/rook`
   }
 }
 
 let getColor = piece => {
   switch piece {
-  | Pawn(p) => p["color"]
-  | King(k) => k["color"]
-  | Queen(q) => q["color"]
-  | Bishop(b) => b["color"]
-  | Knight(n) => n["color"]
-  | Rook(r) => r["color"]
+  | Pawn(p) => p.color
+  | King(k) => k.color
+  | Queen(x)
+  | Bishop(x)
+  | Knight(x)
+  | Rook(x) =>
+    x.color
   }
 }
 
 let getEmphasis = piece => {
   switch piece {
-  | Pawn(p) => p["emphasizeCoverRange"]
-  | King(k) => k["emphasizeCoverRange"]
-  | Queen(q) => q["emphasizeCoverRange"]
-  | Bishop(b) => b["emphasizeCoverRange"]
-  | Knight(n) => n["emphasizeCoverRange"]
-  | Rook(r) => r["emphasizeCoverRange"]
+  | Pawn(p) => p.emphasizeCoverRange
+  | King(k) => k.emphasizeCoverRange
+  | Queen(x)
+  | Bishop(x)
+  | Knight(x)
+  | Rook(x) =>
+    x.emphasizeCoverRange
   }
 }
 
 let getX = piece => {
   switch piece {
-  | Pawn(p) => p["x"]
-  | King(k) => k["x"]
-  | Queen(q) => q["x"]
-  | Bishop(b) => b["x"]
-  | Knight(n) => n["x"]
-  | Rook(r) => r["x"]
+  | Pawn(p) => p.x
+  | King(k) => k.x
+  | Queen(x)
+  | Bishop(x)
+  | Knight(x)
+  | Rook(x) =>
+    x.x
   }
 }
 
 let getY = piece => {
   switch piece {
-  | Pawn(p) => p["y"]
-  | King(k) => k["y"]
-  | Queen(q) => q["y"]
-  | Bishop(b) => b["y"]
-  | Knight(n) => n["y"]
-  | Rook(r) => r["y"]
+  | Pawn(p) => p.y
+  | King(k) => k.y
+  | Queen(x)
+  | Bishop(x)
+  | Knight(x)
+  | Rook(x) =>
+    x.y
   }
 }
 
 let withMoved = piece => {
-  let withMovedHelper = (p, y) => {
-    if p["hasMoved"] {
-      piece
-    } else {
-      y
-    }
-  }
   switch piece {
-  | Pawn(p) =>
-    withMovedHelper(
-      p,
-      Pawn({
-        "x": p["x"],
-        "y": p["y"],
-        "color": p["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": p["emphasizeCoverRange"],
-        "hasJustMoved2Spaces": false,
-      }),
-    )
-  | King(k) =>
-    withMovedHelper(
-      k,
-      King({
-        "x": k["x"],
-        "y": k["y"],
-        "color": k["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": k["emphasizeCoverRange"],
-        "inCheck": k["inCheck"],
-      }),
-    )
-  | Queen(p) =>
-    withMovedHelper(
-      p,
-      Queen({
-        "x": p["x"],
-        "y": p["y"],
-        "color": p["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": p["emphasizeCoverRange"],
-      }),
-    )
-  | Bishop(p) =>
-    withMovedHelper(
-      p,
-      Bishop({
-        "x": p["x"],
-        "y": p["y"],
-        "color": p["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": p["emphasizeCoverRange"],
-      }),
-    )
-  | Knight(p) =>
-    withMovedHelper(
-      p,
-      Knight({
-        "x": p["x"],
-        "y": p["y"],
-        "color": p["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": p["emphasizeCoverRange"],
-      }),
-    )
-  | Rook(p) =>
-    withMovedHelper(
-      p,
-      Rook({
-        "x": p["x"],
-        "y": p["y"],
-        "color": p["color"],
-        "hasMoved": true,
-        "emphasizeCoverRange": p["emphasizeCoverRange"],
-      }),
-    )
+  | Pawn(p) => Pawn({...p, hasMoved: true, hasJustMoved2Spaces: false})
+  | King(k) => King({...k, hasMoved: true})
+  | Queen(p) => Queen({...p, hasMoved: true})
+  | Bishop(p) => Bishop({...p, hasMoved: true})
+  | Knight(p) => Knight({...p, hasMoved: true})
+  | Rook(p) => Rook({...p, hasMoved: true})
   }
 }
 
 let with2Spaces = p => {
-  Pawn({
-    "x": p["x"],
-    "y": p["y"],
-    "color": p["color"],
-    "hasMoved": true,
-    "emphasizeCoverRange": p["emphasizeCoverRange"],
-    "hasJustMoved2Spaces": true,
-  })
+  Pawn({...p, hasMoved: true, hasJustMoved2Spaces: true})
 }
 
 let disable2Spaces = p => {
-  Pawn({
-    "x": p["x"],
-    "y": p["y"],
-    "color": p["color"],
-    "hasMoved": p["hasMoved"],
-    "emphasizeCoverRange": p["emphasizeCoverRange"],
-    "hasJustMoved2Spaces": false,
-  })
+  Pawn({...p, hasJustMoved2Spaces: false})
 }
 
 let withPosition = (piece, (x, y)) => {
   switch piece {
-  | Pawn(p) =>
-    Pawn({
-      "x": x,
-      "y": y,
-      "color": p["color"],
-      "hasMoved": p["hasMoved"],
-      "emphasizeCoverRange": p["emphasizeCoverRange"],
-      "hasJustMoved2Spaces": p["hasJustMoved2Spaces"],
-    })
-  | King(k) =>
-    King({
-      "x": x,
-      "y": y,
-      "color": k["color"],
-      "hasMoved": k["hasMoved"],
-      "emphasizeCoverRange": k["emphasizeCoverRange"],
-      "inCheck": k["inCheck"],
-    })
-  | Queen(p) =>
-    Queen({
-      "x": x,
-      "y": y,
-      "color": p["color"],
-      "hasMoved": p["hasMoved"],
-      "emphasizeCoverRange": p["emphasizeCoverRange"],
-    })
-  | Bishop(p) =>
-    Bishop({
-      "x": x,
-      "y": y,
-      "color": p["color"],
-      "hasMoved": p["hasMoved"],
-      "emphasizeCoverRange": p["emphasizeCoverRange"],
-    })
-  | Knight(p) =>
-    Knight({
-      "x": x,
-      "y": y,
-      "color": p["color"],
-      "hasMoved": p["hasMoved"],
-      "emphasizeCoverRange": p["emphasizeCoverRange"],
-    })
-  | Rook(p) =>
-    Rook({
-      "x": x,
-      "y": y,
-      "color": p["color"],
-      "hasMoved": p["hasMoved"],
-      "emphasizeCoverRange": p["emphasizeCoverRange"],
-    })
+  | Pawn(p) => Pawn({...p, x: x, y: y})
+  | King(k) => King({...k, x: x, y: y})
+  | Queen(p) => Queen({...p, x: x, y: y})
+  | Bishop(p) => Bishop({...p, x: x, y: y})
+  | Knight(p) => Knight({...p, x: x, y: y})
+  | Rook(p) => Rook({...p, x: x, y: y})
   }
 }
 
-let promotionRank = p => {
-  switch p["color"] {
+let promotionRank = (p: pawn) => {
+  switch p.color {
   | White => 7
   | Black => 0
   }
 }
 
-let backRank = p => {
-  switch p["color"] {
+let backRank = (p: king) => {
+  switch p.color {
   | White => 0
   | Black => 7
   }
 }
 
-let pawnOffsetHelper = (p, n) => {
-  switch p["color"] {
+let pawnOffsetHelper = (p: pawn, n) => {
+  switch p.color {
   | White => n
   | Black => -n
   }
+}
+
+let pawn = (color, x, y) => {
+  Pawn({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+    hasJustMoved2Spaces: false,
+  })
+}
+
+let king = (color, x, y) => {
+  King({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+    inCheck: false,
+  })
+}
+
+let queen = (color, x, y) => {
+  Queen({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+  })
+}
+
+let rook = (color, x, y) => {
+  Rook({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+  })
+}
+
+let bishop = (color, x, y) => {
+  Bishop({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+  })
+}
+
+let knight = (color, x, y) => {
+  Knight({
+    x: x,
+    y: y,
+    color: color,
+    hasMoved: false,
+    emphasizeCoverRange: false,
+  })
 }

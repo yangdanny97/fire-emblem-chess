@@ -2,6 +2,7 @@ import * as Utils from './Utils.bs.js';
 import * as Board from './Board.bs.js';
 import * as Pieces from './Pieces.bs.js';
 import * as Grid from './Grid.bs.js';
+import * as Sounds from './Sounds.js';
 
 var Belt_List = require("rescript/lib/js/belt_List.js");
 
@@ -23,50 +24,12 @@ class Tags {
 
 class Game {
     constructor() {
-        this.board = Board.board([
-            // white pawns
-            Pieces.pawn(Colors.white, 0, 1),
-            Pieces.pawn(Colors.white, 1, 1),
-            Pieces.pawn(Colors.white, 2, 1),
-            Pieces.pawn(Colors.white, 3, 1),
-            Pieces.pawn(Colors.white, 4, 1),
-            Pieces.pawn(Colors.white, 5, 1),
-            Pieces.pawn(Colors.white, 6, 1),
-            Pieces.pawn(Colors.white, 7, 1),
-            // white pieces
-            Pieces.rook(Colors.white, 0, 0),
-            Pieces.rook(Colors.white, 7, 0),
-            Pieces.knight(Colors.white, 1, 0),
-            Pieces.knight(Colors.white, 6, 0),
-            Pieces.bishop(Colors.white, 2, 0),
-            Pieces.bishop(Colors.white, 5, 0),
-            Pieces.queen(Colors.white, 3, 0),
-            Pieces.king(Colors.white, 4, 0),
-            // black pawns
-            Pieces.pawn(Colors.black, 0, 6),
-            Pieces.pawn(Colors.black, 1, 6),
-            Pieces.pawn(Colors.black, 2, 6),
-            Pieces.pawn(Colors.black, 3, 6),
-            Pieces.pawn(Colors.black, 4, 6),
-            Pieces.pawn(Colors.black, 5, 6),
-            Pieces.pawn(Colors.black, 6, 6),
-            Pieces.pawn(Colors.black, 7, 6),
-            // black pieces
-            Pieces.rook(Colors.black, 0, 7),
-            Pieces.rook(Colors.black, 7, 7),
-            Pieces.knight(Colors.black, 1, 7),
-            Pieces.knight(Colors.black, 6, 7),
-            Pieces.bishop(Colors.black, 2, 7),
-            Pieces.bishop(Colors.black, 5, 7),
-            Pieces.queen(Colors.black, 3, 7),
-            Pieces.king(Colors.black, 4, 7),
-        ]);
+        this.board = Board.init();
         this.turn = Colors.white;
         this.selectedPiece = undefined;
         this.legalMoves = undefined; // legal moves of currently selected piece
         // start cursor at white king
         this.cursorPosition = [4, 0];
-        this.sounds = undefined;
         this.promote = false;
     }
 
@@ -105,48 +68,6 @@ class Game {
                     break;
             }
         });
-        this.sounds = {
-            "warning": new Howl({
-                src: ['./assets/sounds/warning.flac'],
-                autoplay: false,
-                loop: false,
-            }),
-            "capture": new Howl({
-                src: ['./assets/sounds/capture.flac'],
-                autoplay: false,
-                loop: false,
-            }),
-            "move": new Howl({
-                src: ['./assets/sounds/move.wav'],
-                autoplay: false,
-                loop: false,
-            }),
-            "select": new Howl({
-                src: ['./assets/sounds/select.wav'],
-                autoplay: false,
-                loop: false,
-            }),
-            "cursor": new Howl({
-                src: ['./assets/sounds/cursor.wav'],
-                autoplay: false,
-                loop: false,
-            }),
-            "victory": new Howl({
-                src: ['./assets/sounds/victory1.flac'],
-                autoplay: false,
-                loop: false,
-            }),
-            "white_turn": new Howl({
-                src: ['./assets/sounds/white_turn.flac'],
-                autoplay: false,
-                loop: false,
-            }),
-            "black_turn": new Howl({
-                src: ['./assets/sounds/black_turn.flac'],
-                autoplay: false,
-                loop: false,
-            }),
-        }
         this.handleTurnStart();
         this.draw();
     }
@@ -182,35 +103,35 @@ class Game {
     }
 
     winSound() {
-        this.sounds.victory.play();
+        Sounds.victory.play();
     }
 
     cursorSound() {
-        this.sounds.cursor.play();
+        Sounds.cursor.play();
     }
 
     successSound() {
-        this.sounds.select.play();
+        Sounds.select.play();
     }
 
     failureSound() {
-        this.sounds.warning.play();
+        Sounds.warning.play();
     }
 
     moveSound() {
-        this.sounds.move.play()
+        Sounds.move.play()
     }
 
     turnStartSound() {
         if (this.turn === Colors.white) {
-            this.sounds.white_turn.play();
+            Sounds.white_turn.play();
         } else {
-            this.sounds.black_turn.play();
+            Sounds.black_turn.play();
         }
     }
 
     captureSound() {
-        this.sounds.capture.play();
+        Sounds.capture.play();
     }
 
     handleSelect() {
@@ -382,16 +303,16 @@ class Game {
         var piece = undefined;
         switch (key) {
             case 66: // B
-                piece = Pieces.bishop(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Utils.bishop(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 78: // N
-                piece = Pieces.knight(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Utils.knight(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 82: // R
-                piece = Pieces.rook(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Utils.rook(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 81: // Q
-                piece = Pieces.queen(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Utils.queen(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
         }
         if (piece === undefined) {
