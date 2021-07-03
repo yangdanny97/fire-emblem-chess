@@ -11,7 +11,6 @@ type king = {
   "hasMoved": bool,
   "emphasizeCoverRange": bool,
   "inCheck": bool,
-  "checkmated": bool,
 }
 type pawn = {
   "x": int,
@@ -29,10 +28,6 @@ type pieces =
   | Knight(piece)
   | Rook(piece)
 type board = {pieces: list<pieces>}
-
-let scalingFactor = 4
-let assetSize = 23
-let gridSize = scalingFactor * assetSize
 
 let oppositeColor = color => {
   switch color {
@@ -134,7 +129,6 @@ let withMoved = piece => {
         "hasMoved": true,
         "emphasizeCoverRange": k["emphasizeCoverRange"],
         "inCheck": k["inCheck"],
-        "checkmated": k["checkmated"],
       }),
     )
   | Queen(p) =>
@@ -225,7 +219,6 @@ let withPosition = (piece, (x, y)) => {
       "hasMoved": k["hasMoved"],
       "emphasizeCoverRange": k["emphasizeCoverRange"],
       "inCheck": k["inCheck"],
-      "checkmated": k["checkmated"],
     })
   | Queen(p) =>
     Queen({

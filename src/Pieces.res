@@ -1,6 +1,68 @@
 open Belt
 open Utils
 
+let pawn = (color, x, y) => {
+  Pawn({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+    "hasJustMoved2Spaces": false,
+  })
+}
+
+let king = (color, x, y) => {
+  King({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+    "inCheck": false,
+  })
+}
+
+let queen = (color, x, y) => {
+  Queen({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+  })
+}
+
+let rook = (color, x, y) => {
+  Rook({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+  })
+}
+
+let bishop = (color, x, y) => {
+  Bishop({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+  })
+}
+
+let knight = (color, x, y) => {
+  Knight({
+    "x": x,
+    "y": y,
+    "color": color,
+    "hasMoved": false,
+    "emphasizeCoverRange": false,
+  })
+}
+
 let canCover = (piece, board, position) => {
   let p = Board.getPiece(board, position, None)
   switch p {

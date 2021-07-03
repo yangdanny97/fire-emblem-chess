@@ -1,6 +1,10 @@
 open Utils
 open Belt
 
+let board = (piecesArr) => {
+  "pieces": List.fromArray(piecesArr)
+}
+
 let getPiece = (board, (x, y), color) => {
   List.getBy(board["pieces"], p => {
     let colorPredicate = switch color {

@@ -5,19 +5,7 @@ import * as Grid from './Grid.bs.js';
 
 var Belt_List = require("rescript/lib/js/belt_List.js");
 
-var svg = d3.select("#board");
-
-// var posX;
-// var posY;
-// if (d.turnColor === Colors.white) {
-//     // A1 is bottom left
-//     posX = d.x * gridSize;
-//     posY = (7 - d.y) * gridSize;
-// } else {
-//     // A1 is top right
-//     posX = (7 - d.x) * gridSize;
-//     posY = d.y * gridSize;
-// }
+var svg;
 
 class Colors {
     static white = 0;
@@ -33,142 +21,52 @@ class Tags {
     static rook = 5;
 }
 
-// adapt to rescript
-class Constructors {
-    static board(pieces) {
-        return {
-            pieces: Belt_List.fromArray(pieces),
-        }
-    }
-
-    static pawn(color, x, y) {
-        return {
-            TAG: /* Pawn */ 0,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false,
-                hasJustMoved2Spaces: false
-            }
-        };
-    }
-
-    static king(color, x, y) {
-        return {
-            TAG: /* King */ 1,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false,
-                inCheck: false,
-                checkmated: false
-            }
-        };
-    }
-
-    static queen(color, x, y) {
-        return {
-            TAG: /* Queen */ 2,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false
-            }
-        };
-    }
-
-    static bishop(color, x, y) {
-        return {
-            TAG: /* Bishop */ 3,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false
-            }
-        };
-    }
-
-    static knight(color, x, y) {
-        return {
-            TAG: /* Knight */ 4,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false
-            }
-        }
-    }
-
-    static rook(color, x, y) {
-        return {
-            TAG: /* Rook */ 5,
-            _0: {
-                x: x,
-                y: y,
-                color: color,
-                hasMoved: false,
-                emphasizeCoverRange: false
-            }
-        };
-    }
-}
-
 class Game {
     constructor() {
-        this.board = Constructors.board([
+        this.board = Board.board([
             // white pawns
-            Constructors.pawn(Colors.white, 0, 1),
-            Constructors.pawn(Colors.white, 1, 1),
-            Constructors.pawn(Colors.white, 2, 1),
-            Constructors.pawn(Colors.white, 3, 1),
-            Constructors.pawn(Colors.white, 4, 1),
-            Constructors.pawn(Colors.white, 5, 1),
-            Constructors.pawn(Colors.white, 6, 1),
-            Constructors.pawn(Colors.white, 7, 1),
+            Pieces.pawn(Colors.white, 0, 1),
+            Pieces.pawn(Colors.white, 1, 1),
+            Pieces.pawn(Colors.white, 2, 1),
+            Pieces.pawn(Colors.white, 3, 1),
+            Pieces.pawn(Colors.white, 4, 1),
+            Pieces.pawn(Colors.white, 5, 1),
+            Pieces.pawn(Colors.white, 6, 1),
+            Pieces.pawn(Colors.white, 7, 1),
             // white pieces
-            Constructors.rook(Colors.white, 0, 0),
-            Constructors.rook(Colors.white, 7, 0),
-            Constructors.knight(Colors.white, 1, 0),
-            Constructors.knight(Colors.white, 6, 0),
-            Constructors.bishop(Colors.white, 2, 0),
-            Constructors.bishop(Colors.white, 5, 0),
-            Constructors.queen(Colors.white, 3, 0),
-            Constructors.king(Colors.white, 4, 0),
+            Pieces.rook(Colors.white, 0, 0),
+            Pieces.rook(Colors.white, 7, 0),
+            Pieces.knight(Colors.white, 1, 0),
+            Pieces.knight(Colors.white, 6, 0),
+            Pieces.bishop(Colors.white, 2, 0),
+            Pieces.bishop(Colors.white, 5, 0),
+            Pieces.queen(Colors.white, 3, 0),
+            Pieces.king(Colors.white, 4, 0),
             // black pawns
-            Constructors.pawn(Colors.black, 0, 6),
-            Constructors.pawn(Colors.black, 1, 6),
-            Constructors.pawn(Colors.black, 2, 6),
-            Constructors.pawn(Colors.black, 3, 6),
-            Constructors.pawn(Colors.black, 4, 6),
-            Constructors.pawn(Colors.black, 5, 6),
-            Constructors.pawn(Colors.black, 6, 6),
-            Constructors.pawn(Colors.black, 7, 6),
+            Pieces.pawn(Colors.black, 0, 6),
+            Pieces.pawn(Colors.black, 1, 6),
+            Pieces.pawn(Colors.black, 2, 6),
+            Pieces.pawn(Colors.black, 3, 6),
+            Pieces.pawn(Colors.black, 4, 6),
+            Pieces.pawn(Colors.black, 5, 6),
+            Pieces.pawn(Colors.black, 6, 6),
+            Pieces.pawn(Colors.black, 7, 6),
             // black pieces
-            Constructors.rook(Colors.black, 0, 7),
-            Constructors.rook(Colors.black, 7, 7),
-            Constructors.knight(Colors.black, 1, 7),
-            Constructors.knight(Colors.black, 6, 7),
-            Constructors.bishop(Colors.black, 2, 7),
-            Constructors.bishop(Colors.black, 5, 7),
-            Constructors.queen(Colors.black, 3, 7),
-            Constructors.king(Colors.black, 4, 7),
+            Pieces.rook(Colors.black, 0, 7),
+            Pieces.rook(Colors.black, 7, 7),
+            Pieces.knight(Colors.black, 1, 7),
+            Pieces.knight(Colors.black, 6, 7),
+            Pieces.bishop(Colors.black, 2, 7),
+            Pieces.bishop(Colors.black, 5, 7),
+            Pieces.queen(Colors.black, 3, 7),
+            Pieces.king(Colors.black, 4, 7),
         ]);
         this.turn = Colors.white;
-        this.selectedPiece = null;
-        this.legalMoves = null; // legal moves of currently selected piece
+        this.selectedPiece = undefined;
+        this.legalMoves = undefined; // legal moves of currently selected piece
         // start cursor at white king
         this.cursorPosition = [4, 0];
-        this.sounds = null;
+        this.sounds = undefined;
         this.promote = false;
     }
 
@@ -250,12 +148,12 @@ class Game {
             }),
         }
         this.handleTurnStart();
-        this.makeGridAndDraw();
+        this.draw();
     }
 
     handleTurnStart() {
-        this.selectedPiece = null;
-        this.legalMoves = null;
+        this.selectedPiece = undefined;
+        this.legalMoves = undefined;
         var color = this.turn;
         // make sure player is not checkmated
         var otherColor = Utils.oppositeColor(color);
@@ -280,7 +178,7 @@ class Game {
             return;
         }
         this.turnStartSound();
-        this.makeGridAndDraw();
+        this.draw();
     }
 
     winSound() {
@@ -317,7 +215,7 @@ class Game {
 
     handleSelect() {
         if (this.lock) return;
-        if (this.selectedPiece === undefined || this.selectedPiece === null) {
+        if (this.selectedPiece === undefined) {
             // no piece selected
             var piece = Board.getPiece(
                 this.board,
@@ -332,12 +230,12 @@ class Game {
                 this.selectedPiece = piece;
                 this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(piece, this.board));
                 this.successSound();
-                this.makeGridAndDraw();
+                this.draw();
             } else {
                 // select enemy piece - toggle cover range highlight
                 piece._0.emphasizeCoverRange = !Utils.getEmphasis(piece);
                 this.successSound();
-                this.makeGridAndDraw();
+                this.draw();
             }
         } else {
             // friendly piece already selected
@@ -385,7 +283,7 @@ class Game {
                     this.selectedPiece = target_piece;
                     this.legalMoves = Belt_List.toArray(Pieces.getLegalMoves(target_piece, this.board));
                     this.successSound();
-                    this.makeGridAndDraw();
+                    this.draw();
                 }
             }
         }
@@ -401,11 +299,11 @@ class Game {
 
     handleCancel() {
         if (this.lock) return;
-        if (this.selectedPiece !== null) {
+        if (this.selectedPiece !== undefined) {
             this.successSound();
-            this.selectedPiece = null;
-            this.legalMoves = null;
-            this.makeGridAndDraw();
+            this.selectedPiece = undefined;
+            this.legalMoves = undefined;
+            this.draw();
         } else {
             this.failureSound();
         }
@@ -473,7 +371,7 @@ class Game {
 
     handleMoveCursor() {
         this.cursorSound();
-        this.makeGridAndDraw();
+        this.draw();
     }
 
     handlePromote(key) {
@@ -481,22 +379,22 @@ class Game {
             this.failureSound();
             return;
         }
-        var piece = null;
+        var piece = undefined;
         switch (key) {
             case 66: // B
-                piece = Constructors.bishop(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Pieces.bishop(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 78: // N
-                piece = Constructors.knight(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Pieces.knight(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 82: // R
-                piece = Constructors.rook(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Pieces.rook(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
             case 81: // Q
-                piece = Constructors.queen(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
+                piece = Pieces.queen(Utils.getColor(this.selectedPiece), Utils.getX(this.selectedPiece), Utils.getY(this.selectedPiece));
                 break;
         }
-        if (piece === null) {
+        if (piece === undefined) {
             this.failureSound();
             return;
         }
@@ -507,136 +405,67 @@ class Game {
         };
         this.promote = false;
         this.winSound(); // TODO - get unique promote sound
-        this.makeGridAndDraw();
+        this.draw();
         this.endTurn();
     }
 
     draw() {
-        var grid = Grid.makeGrid(this.board); // TODO
+        var grid = Grid.makeGrid(this.board, this.turn, this.cursorPosition, this.selectedPiece, this.legalMoves);
         this.drawGrid(grid);
     }
 
-    makeGridAndDraw() {
-        var otherColor = Utils.oppositeColor(this.turn);
-        var coveredPositions = Belt_List.toArray(Pieces.getCoveredPositionsForColor(this.board, otherColor));
-        var emphasizedCoveredPositions = Belt_List.toArray(Pieces.getEmphasizedCoveredPositionsForColor(this.board, otherColor));
-
-        var grid = [];
-        for (var i = 0; i < 8; i++) {
-            var row = [];
-            for (var j = 0; j < 8; j++) {
-                row.push(new Grid(i, j, this.turn));
-            }
-            grid.push(row);
-        }
-
-        Belt_List.toArray(this.board.pieces).forEach(p => {
-            grid[Utils.getX(p)][Utils.getY(p)].piece = p;
-        });
-
-        coveredPositions.forEach(p => {
-            grid[p[0]][p[1]].covered = true;
-        });
-        emphasizedCoveredPositions.forEach(p => {
-            grid[p[0]][p[1]].coveredAndSelected = true;
-        });
-
-        grid[this.cursorPosition[0]][this.cursorPosition[1]].selection = true;
-        if (this.selectedPiece !== null) {
-            grid[this.selectedPiece.x][this.selectedPiece.y].selection = true;
-            this.legalMoves.forEach(p => {
-                grid[p[0]][p[1]].movement = true;
-            });
-            if (this.selectedPiece !== null && this.selectedPiece !== undefined) {
-                grid[Utils.getX(this.selectedPiece)][Utils.getY(this.selectedPiece)].selection = true;
-                if (this.legalMoves !== null) {
-                    this.legalMoves.forEach(p => {
-                        grid[p[0]][p[1]].movement = true;
-                    });
-                }
-            }
-            this.drawGrid(grid.flat());
-        }
-    }
-
     drawGrid(data) {
-        var grid = svg.selectAll(".grid")
-            .data(data, g => g.id)
-            .join("g");
+        var grid = svg.selectAll("g")
+            .data(data, d => d.id);
+
+        var enter = grid.enter().append("g");
+        enter.append("rect").attr("class", "base");
+        enter.append("rect").attr("class", "overlay");
+        enter.append("rect").attr("class", "selection");
+        enter.append("image");
 
         // draw base square
-        var inCheck = this.piece !== null && this.piece instanceof King &&
-            this.piece.color === this.turnColor && this.covered;
-        var color = (this.x % 2 === this.y % 2) ? "maroon" : "antiquewhite";
-        g.append("rect")
-        var inCheck = d => d.piece !== undefined && d.piece !== null && d.piece.TAG === Tags.king &&
-            Utils.getColor(d.piece) === d.turnColor && d.covered;
-        var color = d => (d.x % 2 === d.y % 2) ? "maroon" : "antiquewhite";
-        grid.append("rect")
-            .attr("width", gridSize)
-            .attr("height", gridSize)
-            .attr("transform", `translate(${posX} ${posY})`)
-            .attr("fill", d => inCheck(d) ? "red" : color(d));
+        grid.select(".base")
+            .attr("width", Grid.size)
+            .attr("height", Grid.size)
+            .attr("transform", d => `translate(${Grid.getX(d)} ${Grid.getY(d)})`)
+            .attr("fill", d => Grid.getInCheck(d) ? "red" : Grid.getColor(d));
 
         // draw overlay (movement and cover)
-        var overlayColor = null;
-        if (d.coveredAndSelected && !d.movement && !inCheck) {
-            overlayColor = "red";
-        } else if (
-            d.covered && d.piece !== null &&
-            !inCheck && !d.movement
-        ) {
-            overlayColor = "lightcoral";
-        } else if (d.movement && d.covered) {
-            overlayColor = "purple";
-        } else if (d.movement) {
-            overlayColor = "blue";
-        }
-        if (overlayColor !== null) {
-            grid.append("rect")
-                .attr("width", gridSize)
-                .attr("height", gridSize)
-                .attr("transform", `translate(${posX} ${posY})`)
-                .attr("fill", overlayColor)
-                .style("opacity", 0.8);
-        }
+        grid.select(".overlay")
+            .attr("width", Grid.size)
+            .attr("height", Grid.size)
+            .attr("transform", d => `translate(${Grid.getX(d)} ${Grid.getY(d)})`)
+            .attr("fill", d => Grid.getOverlayColor(d))
+            .style("opacity", 0.8)
+            .style("display", d => Grid.getOverlayColor(d) === "none" ? "none" : "inline");
 
         // sprite
-        if (d.piece !== undefined && d.piece !== null) {
-            grid.append("image")
-                .attr("transform", `translate(${posX} ${posY})`)
-                .attr("width", gridSize)
-                .attr("height", gridSize)
-                .attr("id", positionToId(d.x, d.y))
-                .attr("xlink:href", `./${Utils.getAsset(d.piece)}.gif`);
-            if (this.piece !== null) {
-                g.append("image")
-                    .attr("transform", `translate(${posX} ${posY})`)
-                    .attr("width", gridSize)
-                    .attr("height", gridSize)
-                    .attr("id", positionToId(this.x, this.y))
-                    .attr("xlink:href", `./${this.piece.getAsset()}.gif`);
-            }
+        grid.select("image")
+            .attr("transform", d => `translate(${Grid.getX(d)} ${Grid.getY(d)})`)
+            .attr("width", Grid.size)
+            .attr("height", Grid.size)
+            .attr("id", d => Grid.positionToId(d.x, d.y))
+            .attr("xlink:href", d => (d.piece === undefined) ? "" : `./${Utils.getAsset(d.piece)}.gif`)
+            .style("display", d => (d.piece === undefined) ? "none" : "inline");
 
-            // selection box
-            if (d.selection) {
-                var stroke = ScalingFactor * 3;
-                grid.append("rect")
-                    .attr("width", gridSize - stroke)
-                    .attr("height", gridSize - stroke)
-                    .attr("transform", `translate(${posX + stroke/2} ${posY + stroke/2})`)
-                    .attr("fill", "none")
-                    .attr("stroke-width", `${stroke}px`)
-                    .attr("class", "selection")
-                    .attr("stroke", "goldenrod");
-            }
-        }
+        // selection box
+        grid.select(".selection")
+            .attr("width", Grid.size - Grid.stroke)
+            .attr("height", Grid.size - Grid.stroke)
+            .attr("transform", d => `translate(${Grid.getX(d) + Grid.stroke/2} ${Grid.getY(d) + Grid.stroke/2})`)
+            .attr("fill", "none")
+            .attr("stroke-width", `${Grid.stroke}px`)
+            .attr("class", "selection")
+            .attr("stroke", "goldenrod")
+            .style("display", d => d.selection ? "inline" : "none");
+
+        grid.exit().remove();
     }
 }
 
-
-
 window.onload = () => {
+    svg = d3.select("#board").append("svg").attr("width", Grid.size * 8).attr("height", Grid.size * 8);
     var game = new Game();
     game.init();
 }
