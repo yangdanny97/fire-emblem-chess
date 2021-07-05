@@ -257,3 +257,7 @@ let getEmphasizedCoveredPositionsForColor = (board, color) => {
     board,
   )
 }
+
+let getNumLegalMovesForColor = (board, color) => {
+  List.keep(board.pieces, p => getColor(p) === color)->List.reduce(0, (acc, x) => acc + List.size(getLegalMoves(x, board)))
+}

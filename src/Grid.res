@@ -34,14 +34,15 @@ let makeSquare = (x, y, color) => {
   id: positionToId(x, y),
 }
 
-let makeGrid = (board, turnColor, (cursorX, cursorY), selectedPiece, legalMoves) => {
-  let otherColor = oppositeColor(turnColor)
-  let coveredPositions = Pieces.getCoveredPositionsForColor(board, otherColor)
-  let emphasizedCoveredPositions = Pieces.getEmphasizedCoveredPositionsForColor(board, otherColor)
+let makeGrid = state => {
+  let (cursorX, cursorY) = state.cursorPosition
+  let otherColor = oppositeColor(state.turn)
+  let coveredPositions = Pieces.getCoveredPositionsForColor(state.board, otherColor)
+  let emphasizedCoveredPositions = Pieces.getEmphasizedCoveredPositionsForColor(state.board, otherColor)
 
-  let grid = Belt.Array.makeBy(8, x => Belt.Array.makeBy(8, y => makeSquare(x, y, turnColor)))
+  let grid = Belt.Array.makeBy(8, x => Belt.Array.makeBy(8, y => makeSquare(x, y, state.turn)))
 
-  Belt.List.forEach(board.pieces, p => {
+  Belt.List.forEach(state.board.pieces, p => {
     grid[getX(p)][getY(p)].piece = Some(p)
   })
 
@@ -53,11 +54,11 @@ let makeGrid = (board, turnColor, (cursorX, cursorY), selectedPiece, legalMoves)
   })
 
   grid[cursorX][cursorY].selection = true
-  switch selectedPiece {
+  switch state.selectedPiece {
   | Some(p) => {
       grid[getX(p)][getY(p)].selection = true
-      switch legalMoves {
-      | Some(l) => Belt.Array.forEach(l, ((x, y)) => grid[x][y].movement = true)
+      switch state.legalMoves {
+      | Some(l) => Belt.List.forEach(l, ((x, y)) => grid[x][y].movement = true)
       | _ => ()
       }
     }

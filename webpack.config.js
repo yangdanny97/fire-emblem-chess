@@ -8,5 +8,6 @@ module.exports = {
         filename: "game.js",
         path: path.resolve(__dirname, "out/"),
     },
-    mode: "none"
+    mode: "none",
+    target: "web"
 };

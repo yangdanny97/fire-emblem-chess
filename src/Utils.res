@@ -3,13 +3,13 @@ type color =
   | Black
 
 type position = (int, int)
-type piece = {x: int, y: int, color: color, hasMoved: bool, emphasizeCoverRange: bool}
+type piece = {x: int, y: int, color: color, hasMoved: bool, mutable emphasizeCoverRange: bool}
 type king = {
   x: int,
   y: int,
   color: color,
   hasMoved: bool,
-  emphasizeCoverRange: bool,
+  mutable emphasizeCoverRange: bool,
   inCheck: bool,
 }
 type pawn = {
@@ -17,7 +17,7 @@ type pawn = {
   y: int,
   color: color,
   hasMoved: bool,
-  emphasizeCoverRange: bool,
+  mutable emphasizeCoverRange: bool,
   hasJustMoved2Spaces: bool,
 }
 type pieces =
@@ -28,6 +28,15 @@ type pieces =
   | Knight(piece)
   | Rook(piece)
 type board = {pieces: list<pieces>}
+type state = {
+  board: board,
+  turn: color,
+  selectedPiece: option<pieces>,
+  legalMoves: option<list<position>>,
+  cursorPosition: position,
+  promote: bool,
+  lock: bool,
+}
 
 let oppositeColor = color => {
   switch color {
@@ -75,6 +84,18 @@ let getEmphasis = piece => {
   | Knight(x)
   | Rook(x) =>
     x.emphasizeCoverRange
+  }
+}
+
+let toggleEmphasis = piece => {
+  switch piece {
+  | Pawn(p) => p.emphasizeCoverRange = !p.emphasizeCoverRange
+  | King(k) => k.emphasizeCoverRange = !k.emphasizeCoverRange
+  | Queen(x)
+  | Bishop(x)
+  | Knight(x)
+  | Rook(x) =>
+    x.emphasizeCoverRange = !x.emphasizeCoverRange
   }
 }
 
