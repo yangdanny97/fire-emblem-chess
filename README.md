@@ -9,6 +9,8 @@ I've been playing a lot of chess during COVID, and Fire Emblem is one of my favo
 
 This game is designed to be played on a single computer, passed back and forth between players. The board orientation will flip depending on whose turn it is.
 
+This project was originally implemented in JS, but I rewrote it in ReScript recently. Check out my blog post on [rewriting a project in ReScript](https://yangdanny97.github.io/blog/2021/07/09/Migrating-to-Rescript) if you want to read about the rewriting process & my thoughts on ReScript as a language.
+
 ## How to Play ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/rook.gif)
 Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/)
 
