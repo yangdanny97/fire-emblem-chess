@@ -1,5 +1,5 @@
 # Fire Emblem Chess
-A Fire Emblem themed, local, browser based chess game. ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
+A Fire Emblem themed, local, browser based chess game. Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/) ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png" width="400" height="400" />
 
@@ -12,7 +12,6 @@ This game is designed to be played on a single computer, passed back and forth b
 This project was originally implemented in JS, but I rewrote it in ReScript recently. Check out my blog post on [rewriting a project in ReScript](https://yangdanny97.github.io/blog/2021/07/09/Migrating-to-Rescript) if you want to read about the rewriting process & my thoughts on ReScript as a language.
 
 ## How to Play ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/rook.gif)
-Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/)
 
 ### Controls
 - WASD to move the cursor
