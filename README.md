@@ -1,5 +1,5 @@
 # Fire Emblem Chess
-A Fire Emblem themed, local, browser based chess game. ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
+A Fire Emblem themed, local, browser based chess game. Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/) ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/knight.gif)
 
 <img src="https://yangdanny97.github.io/fire-emblem-chess/assets/screenshots/board.png" width="400" height="400" />
 
@@ -9,8 +9,9 @@ I've been playing a lot of chess during COVID, and Fire Emblem is one of my favo
 
 This game is designed to be played on a single computer, passed back and forth between players. The board orientation will flip depending on whose turn it is.
 
+This project was originally implemented in JS, but I rewrote it in ReScript recently. Check out my blog post on [rewriting a project in ReScript](https://yangdanny97.github.io/blog/2021/07/09/Migrating-to-Rescript) if you want to read about the rewriting process & my thoughts on ReScript as a language.
+
 ## How to Play ![](https://yangdanny97.github.io/fire-emblem-chess/assets/White/rook.gif)
-Play it in your browser [here](https://yangdanny97.github.io/fire-emblem-chess/)
 
 ### Controls
 - WASD to move the cursor
@@ -60,9 +61,7 @@ I used sounds from the GBA games and Fire Emblem Heroes.
 
 ### Why didn't I use one of the many existing chess libraries?
 
-I wasn't sure how to extract the necessary data to display which squares are covered by an enemy piece and keep it updated as the cursor moves, so I figured it wouldn't be too hard to just write a chess library myself. Back when I TA'ed a functional programming class in college, a few students submitted terminal-based chess games as their final projects, so I thought it could be fun to build one myself. That said, this project isn't written completely in a functional style, although it might be fun to migrate everything to Reason one day.
-
-Update 7/2021: I've migrated more than half the codebase to Rescript, trying to keep things as pure/functional as I can. All the chess logic has been ported to Rescript, what remains is the control system & rendering.
+I wasn't sure how to extract the necessary data to display which squares are covered by an enemy piece and keep it updated as the cursor moves, so I figured it wouldn't be too hard to just write a chess library myself. Back when I TA'ed a functional programming class in college, a few students submitted terminal-based chess games as their final projects, so I thought it could be fun to build one myself. 
 
 ### Why did I use D3 to render things instead of ___?
 
