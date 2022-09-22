@@ -4,12 +4,11 @@
     "rescript": "^9.1.4"
   },
   "scripts": {
-    "re:build": "rescript",
-    "re:start": "rescript build -w",
-    "build": "npx webpack"
+    "build": "rescript",
+    "start": "rescript build -w",
+    "bundle": "esbuild src/Game.js --outfile=out/game.js --bundle"
   },
   "dependencies": {
-    "webpack": "^5.41.1",
-    "webpack-cli": "^4.7.2"
+    "esbuild": "^0.15.8"
   }
 }
