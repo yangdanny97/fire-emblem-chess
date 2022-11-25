@@ -28,9 +28,9 @@ let makeSquare = (x, y, color) => {
   movement: false,
   covered: false,
   coveredAndSelected: false,
-  x: x,
-  y: y,
-  color: color,
+  x,
+  y,
+  color,
   id: positionToId(x, y),
 }
 
@@ -38,7 +38,10 @@ let makeGrid = state => {
   let (cursorX, cursorY) = state.cursorPosition
   let otherColor = oppositeColor(state.turn)
   let coveredPositions = Pieces.getCoveredPositionsForColor(state.board, otherColor)
-  let emphasizedCoveredPositions = Pieces.getEmphasizedCoveredPositionsForColor(state.board, otherColor)
+  let emphasizedCoveredPositions = Pieces.getEmphasizedCoveredPositionsForColor(
+    state.board,
+    otherColor,
+  )
 
   let grid = Belt.Array.makeBy(8, x => Belt.Array.makeBy(8, y => makeSquare(x, y, state.turn)))
 
@@ -62,6 +65,7 @@ let makeGrid = state => {
       | _ => ()
       }
     }
+
   | None => ()
   }
   Belt.Array.concatMany(grid)
@@ -98,7 +102,8 @@ let getOverlayColor = square => {
     "red"
   } else {
     switch square.piece {
-    | Some(_) => if !inCheck && !square.movement && square.covered {
+    | Some(_) =>
+      if !inCheck && !square.movement && square.covered {
         "lightcoral"
       } else {
         blueOrPurple
@@ -110,14 +115,14 @@ let getOverlayColor = square => {
 
 let getX = square => {
   switch square.color {
-    | #White => square.x * size
-    | #Black => (7 - square.x) * size
+  | #White => square.x * size
+  | #Black => (7 - square.x) * size
   }
 }
 
 let getY = square => {
   switch square.color {
-    | #White => (7 - square.y) * size
-    | #Black => square.y * size
+  | #White => (7 - square.y) * size
+  | #Black => square.y * size
   }
 }

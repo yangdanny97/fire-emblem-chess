@@ -76,6 +76,7 @@ let rec getCoveredPositions = (piece, board) => {
       }
       List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
     }
+
   | King(k) => {
       let positions = list{
         (k.x - 1, k.y),
@@ -89,6 +90,7 @@ let rec getCoveredPositions = (piece, board) => {
       }
       List.keep(positions, p => canCover(piece, board, p))
     }
+
   | Queen(_) =>
     List.concat(
       getUnobstructedDiagonalPositions(piece, board),
@@ -108,6 +110,7 @@ let rec getCoveredPositions = (piece, board) => {
       }
       List.keep(positions, p => canCover(piece, board, p))
     }
+
   | Rook(_) => getUnobstructedCardinalPositions(piece, board)
   }
 }
@@ -147,6 +150,7 @@ and getLegalMoves = (piece, board) => {
       })
       List.concat(movement, capture)->List.keep(pos => validStateForMove(board, Pawn(p), pos))
     }
+
   | King(k) => {
       let regularMoves =
         getCoveredPositions(piece, board)->List.keep(p =>
@@ -199,6 +203,7 @@ and getLegalMoves = (piece, board) => {
         }
       }
     }
+
   | Queen(_)
   | Bishop(_)
   | Knight(_)
@@ -256,5 +261,7 @@ let getEmphasizedCoveredPositionsForColor = (board, color) => {
 }
 
 let getNumLegalMovesForColor = (board, color) => {
-  List.keep(board.pieces, p => getColor(p) === color)->List.reduce(0, (acc, x) => acc + List.size(getLegalMoves(x, board)))
+  List.keep(board.pieces, p => getColor(p) === color)->List.reduce(0, (acc, x) =>
+    acc + List.size(getLegalMoves(x, board))
+  )
 }

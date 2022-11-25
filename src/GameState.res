@@ -53,7 +53,7 @@ let handleTurnStart = state => {
     winSound()
     if ownKingInCheck {
       let winner = oppositeColor(state.turn)
-      alert(`${winner :> string} has won! Refresh the page to play again.`)
+      alert(`${(winner :> string)} has won! Refresh the page to play again.`)
     } else {
       alert("Stalemate! Refresh the page to play again.")
     }
@@ -83,6 +83,7 @@ let handleCancel = state => {
         }
         draw(state')
       }
+
     | None => {
         failureSound()
         state
@@ -165,11 +166,12 @@ let handlePromote = (state, key) => {
         let board = {
           pieces: list{piece, ...pieces},
         }
-        let state' = {...state, board: board, promote: false}
+        let state' = {...state, board, promote: false}
         winSound() // TODO - get unique promote sound
         endTurn()
         draw(state')
       }
+
     | None => {
         failureSound()
         state
@@ -216,6 +218,7 @@ let handleSelect = state => {
             draw(state')
           }
         }
+
       | None => {
           failureSound()
           state
@@ -254,6 +257,7 @@ let handleSelect = state => {
           failureSound()
           state
         }
+
       | Some(p) if getColor(p) === state.turn => {
           // select friendly piece
           let state' = {
@@ -264,6 +268,7 @@ let handleSelect = state => {
           successSound()
           draw(state')
         }
+
       | Some(p) => {
           // select enemy piece - toggle highlight
           toggleEmphasis(p)

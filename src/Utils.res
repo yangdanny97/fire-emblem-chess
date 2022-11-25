@@ -1,4 +1,4 @@
-type color = [ #White | #Black ]
+type color = [#White | #Black]
 
 type position = (int, int)
 type piece = {x: int, y: int, color: color, hasMoved: bool, mutable emphasizeCoverRange: bool}
@@ -45,12 +45,12 @@ let oppositeColor = (color: color): color => {
 
 let getAsset = piece => {
   switch piece {
-  | Pawn(p) => `assets/${p.color :> string}/pawn`
-  | King(k) => `assets/${k.color :> string}/king`
-  | Queen(q) => `assets/${q.color :> string}/queen`
-  | Bishop(b) => `assets/${b.color :> string}/bishop`
-  | Knight(n) => `assets/${n.color :> string}/knight`
-  | Rook(r) => `assets/${r.color :> string}/rook`
+  | Pawn(p) => `assets/${(p.color :> string)}/pawn`
+  | King(k) => `assets/${(k.color :> string)}/king`
+  | Queen(q) => `assets/${(q.color :> string)}/queen`
+  | Bishop(b) => `assets/${(b.color :> string)}/bishop`
+  | Knight(n) => `assets/${(n.color :> string)}/knight`
+  | Rook(r) => `assets/${(r.color :> string)}/rook`
   }
 }
 
@@ -135,12 +135,12 @@ let disable2Spaces = p => {
 
 let withPosition = (piece, (x, y)) => {
   switch piece {
-  | Pawn(p) => Pawn({...p, x: x, y: y})
-  | King(k) => King({...k, x: x, y: y})
-  | Queen(p) => Queen({...p, x: x, y: y})
-  | Bishop(p) => Bishop({...p, x: x, y: y})
-  | Knight(p) => Knight({...p, x: x, y: y})
-  | Rook(p) => Rook({...p, x: x, y: y})
+  | Pawn(p) => Pawn({...p, x, y})
+  | King(k) => King({...k, x, y})
+  | Queen(p) => Queen({...p, x, y})
+  | Bishop(p) => Bishop({...p, x, y})
+  | Knight(p) => Knight({...p, x, y})
+  | Rook(p) => Rook({...p, x, y})
   }
 }
 
@@ -167,9 +167,9 @@ let pawnOffsetHelper = (p: pawn, n) => {
 
 let pawn = (color, x, y) => {
   Pawn({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
     hasJustMoved2Spaces: false,
@@ -178,9 +178,9 @@ let pawn = (color, x, y) => {
 
 let king = (color, x, y) => {
   King({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
     inCheck: false,
@@ -189,9 +189,9 @@ let king = (color, x, y) => {
 
 let queen = (color, x, y) => {
   Queen({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
   })
@@ -199,9 +199,9 @@ let queen = (color, x, y) => {
 
 let rook = (color, x, y) => {
   Rook({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
   })
@@ -209,9 +209,9 @@ let rook = (color, x, y) => {
 
 let bishop = (color, x, y) => {
   Bishop({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
   })
@@ -219,9 +219,9 @@ let bishop = (color, x, y) => {
 
 let knight = (color, x, y) => {
   Knight({
-    x: x,
-    y: y,
-    color: color,
+    x,
+    y,
+    color,
     hasMoved: false,
     emphasizeCoverRange: false,
   })

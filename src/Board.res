@@ -1,11 +1,12 @@
 open Utils
 open Belt
 
-let board = (piecesArr) => {
-  pieces: List.fromArray(piecesArr)
+let board = piecesArr => {
+  pieces: List.fromArray(piecesArr),
 }
 
-let init = () => board([
+let init = () =>
+  board([
     // white pawns
     pawn(#White, 0, 1),
     pawn(#White, 1, 1),
@@ -42,7 +43,7 @@ let init = () => board([
     bishop(#Black, 5, 7),
     queen(#Black, 3, 7),
     king(#Black, 4, 7),
-])
+  ])
 
 let getPiece = (board, (x, y), color) => {
   List.getBy(board.pieces, p => {
@@ -93,15 +94,15 @@ let rec confirmMove = (board, piece, position, _) => {
       }
       // en passant
       let callback = if p.x !== newX && p.y !== newY && !hasPiece(board, position, None) {
-        b =>
-          {
-            pieces: List.keep(b.pieces, i => getX(i) !== newX || getY(i) !== p.y),
-          }
+        b => {
+          pieces: List.keep(b.pieces, i => getX(i) !== newX || getY(i) !== p.y),
+        }
       } else {
         noop
       }
       (newPawn, callback)
     }
+
   | King(k) => {
       let y = backRank(k)
       let castleHelper = (oldRookX, newRookX, board) => {
@@ -123,6 +124,7 @@ let rec confirmMove = (board, piece, position, _) => {
         (withPosition(piece, position)->withMoved, noop)
       }
     }
+
   | Queen(_)
   | Bishop(_)
   | Knight(_)
