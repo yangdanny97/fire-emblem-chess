@@ -109,17 +109,15 @@ let getOverlayColor = square => {
 }
 
 let getX = square => {
-  if square.color === White {
-    square.x * size
-  } else {
-    (7 - square.x) * size
+  switch square.color {
+    | #White => square.x * size
+    | #Black => (7 - square.x) * size
   }
 }
 
 let getY = square => {
-  if square.color === White {
-    (7 - square.y) * size
-  } else {
-    square.y * size
+  switch square.color {
+    | #White => (7 - square.y) * size
+    | #Black => square.y * size
   }
 }

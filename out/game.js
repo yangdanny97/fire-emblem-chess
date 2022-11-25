@@ -34,14 +34,7 @@
     "src/Utils.bs.js"(exports) {
       "use strict";
       function oppositeColor2(color) {
-        if (color) {
-          return 0;
-        } else {
-          return 1;
-        }
-      }
-      function colorName(color) {
-        if (color) {
+        if (color === "White") {
           return "Black";
         } else {
           return "White";
@@ -50,17 +43,17 @@
       function getAsset2(piece) {
         switch (piece.TAG | 0) {
           case 0:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/pawn";
+            return "assets/" + piece._0.color + "/pawn";
           case 1:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/king";
+            return "assets/" + piece._0.color + "/king";
           case 2:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/queen";
+            return "assets/" + piece._0.color + "/queen";
           case 3:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/bishop";
+            return "assets/" + piece._0.color + "/bishop";
           case 4:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/knight";
+            return "assets/" + piece._0.color + "/knight";
           case 5:
-            return "assets/" + (piece._0.color ? "Black" : "White") + "/rook";
+            return "assets/" + piece._0.color + "/rook";
         }
       }
       function getColor2(piece) {
@@ -298,26 +291,26 @@
       }
       function promotionRank(p) {
         var match = p.color;
-        if (match) {
-          return 0;
-        } else {
+        if (match === "White") {
           return 7;
+        } else {
+          return 0;
         }
       }
       function backRank(p) {
         var match = p.color;
-        if (match) {
-          return 7;
-        } else {
+        if (match === "White") {
           return 0;
+        } else {
+          return 7;
         }
       }
       function pawnOffsetHelper(p, n) {
         var match = p.color;
-        if (match) {
-          return -n | 0;
-        } else {
+        if (match === "White") {
           return n;
+        } else {
+          return -n | 0;
         }
       }
       function pawn(color, x, y) {
@@ -395,7 +388,6 @@
         };
       }
       exports.oppositeColor = oppositeColor2;
-      exports.colorName = colorName;
       exports.getAsset = getAsset2;
       exports.getColor = getColor2;
       exports.getEmphasis = getEmphasis;
@@ -1050,7 +1042,7 @@
   var require_caml = __commonJS({
     "node_modules/rescript/lib/js/caml.js"(exports) {
       "use strict";
-      function caml_int_compare(x, y) {
+      function int_compare(x, y) {
         if (x < y) {
           return -1;
         } else if (x === y) {
@@ -1059,7 +1051,7 @@
           return 1;
         }
       }
-      function caml_bool_compare(x, y) {
+      function bool_compare(x, y) {
         if (x) {
           if (y) {
             return 0;
@@ -1072,7 +1064,7 @@
           return 0;
         }
       }
-      function caml_float_compare(x, y) {
+      function float_compare(x, y) {
         if (x === y) {
           return 0;
         } else if (x < y) {
@@ -1085,7 +1077,7 @@
           return 0;
         }
       }
-      function caml_string_compare(s1, s2) {
+      function string_compare(s1, s2) {
         if (s1 === s2) {
           return 0;
         } else if (s1 < s2) {
@@ -1094,70 +1086,56 @@
           return 1;
         }
       }
-      function caml_bool_min(x, y) {
+      function bool_min(x, y) {
         if (x) {
           return y;
         } else {
           return x;
         }
       }
-      function caml_int_min(x, y) {
+      function int_min(x, y) {
         if (x < y) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_float_min(x, y) {
+      function float_min(x, y) {
         if (x < y) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_string_min(x, y) {
+      function string_min(x, y) {
         if (x < y) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_int32_min(x, y) {
-        if (x < y) {
-          return x;
-        } else {
-          return y;
-        }
-      }
-      function caml_bool_max(x, y) {
+      function bool_max(x, y) {
         if (x) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_int_max(x, y) {
+      function int_max(x, y) {
         if (x > y) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_float_max(x, y) {
+      function float_max(x, y) {
         if (x > y) {
           return x;
         } else {
           return y;
         }
       }
-      function caml_string_max(x, y) {
-        if (x > y) {
-          return x;
-        } else {
-          return y;
-        }
-      }
-      function caml_int32_max(x, y) {
+      function string_max(x, y) {
         if (x > y) {
           return x;
         } else {
@@ -1214,20 +1192,18 @@
           return y;
         }
       }
-      exports.caml_int_compare = caml_int_compare;
-      exports.caml_bool_compare = caml_bool_compare;
-      exports.caml_float_compare = caml_float_compare;
-      exports.caml_string_compare = caml_string_compare;
-      exports.caml_bool_min = caml_bool_min;
-      exports.caml_int_min = caml_int_min;
-      exports.caml_float_min = caml_float_min;
-      exports.caml_string_min = caml_string_min;
-      exports.caml_int32_min = caml_int32_min;
-      exports.caml_bool_max = caml_bool_max;
-      exports.caml_int_max = caml_int_max;
-      exports.caml_float_max = caml_float_max;
-      exports.caml_string_max = caml_string_max;
-      exports.caml_int32_max = caml_int32_max;
+      exports.int_compare = int_compare;
+      exports.bool_compare = bool_compare;
+      exports.float_compare = float_compare;
+      exports.string_compare = string_compare;
+      exports.bool_min = bool_min;
+      exports.int_min = int_min;
+      exports.float_min = float_min;
+      exports.string_min = string_min;
+      exports.bool_max = bool_max;
+      exports.int_max = int_max;
+      exports.float_max = float_max;
+      exports.string_max = string_max;
       exports.i64_eq = i64_eq;
       exports.i64_neq = i64_neq;
       exports.i64_lt = i64_lt;
@@ -1396,8 +1372,8 @@
             RE_EXN_ID: "Assert_failure",
             _1: [
               "belt_Array.ml",
-              27,
-              4
+              35,
+              2
             ],
             Error: new Error()
           };
@@ -1418,7 +1394,7 @@
             RE_EXN_ID: "Assert_failure",
             _1: [
               "belt_Array.ml",
-              33,
+              45,
               2
             ],
             Error: new Error()
@@ -1573,7 +1549,7 @@
           return [];
         }
         var lena = a.length;
-        var ofs = offset < 0 ? Caml.caml_int_max(lena + offset | 0, 0) : offset;
+        var ofs = offset < 0 ? Caml.int_max(lena + offset | 0, 0) : offset;
         var hasLen = lena - ofs | 0;
         var copyLength = hasLen < len ? hasLen : len;
         if (copyLength <= 0) {
@@ -1587,8 +1563,8 @@
       }
       function sliceToEnd(a, offset) {
         var lena = a.length;
-        var ofs = offset < 0 ? Caml.caml_int_max(lena + offset | 0, 0) : offset;
-        var len = lena - ofs | 0;
+        var ofs = offset < 0 ? Caml.int_max(lena + offset | 0, 0) : offset;
+        var len = lena > ofs ? lena - ofs | 0 : 0;
         var result = new Array(len);
         for (var i = 0; i < len; ++i) {
           result[i] = a[ofs + i | 0];
@@ -1600,7 +1576,7 @@
           return;
         }
         var lena = a.length;
-        var ofs = offset < 0 ? Caml.caml_int_max(lena + offset | 0, 0) : offset;
+        var ofs = offset < 0 ? Caml.int_max(lena + offset | 0, 0) : offset;
         var hasLen = lena - ofs | 0;
         var fillLength = hasLen < len ? hasLen : len;
         if (fillLength <= 0) {
@@ -1624,9 +1600,9 @@
       function blit(a1, ofs1, a2, ofs2, len) {
         var lena1 = a1.length;
         var lena2 = a2.length;
-        var srcofs1 = ofs1 < 0 ? Caml.caml_int_max(lena1 + ofs1 | 0, 0) : ofs1;
-        var srcofs2 = ofs2 < 0 ? Caml.caml_int_max(lena2 + ofs2 | 0, 0) : ofs2;
-        var blitLength = Caml.caml_int_min(len, Caml.caml_int_min(lena1 - srcofs1 | 0, lena2 - srcofs2 | 0));
+        var srcofs1 = ofs1 < 0 ? Caml.int_max(lena1 + ofs1 | 0, 0) : ofs1;
+        var srcofs2 = ofs2 < 0 ? Caml.int_max(lena2 + ofs2 | 0, 0) : ofs2;
+        var blitLength = Caml.int_min(len, Caml.int_min(lena1 - srcofs1 | 0, lena2 - srcofs2 | 0));
         if (srcofs2 <= srcofs1) {
           for (var j = 0; j < blitLength; ++j) {
             a2[j + srcofs2 | 0] = a1[j + srcofs1 | 0];
@@ -1643,7 +1619,7 @@
         }
       }
       function forEach(a, f) {
-        return forEachU(a, Curry.__1(f));
+        forEachU(a, Curry.__1(f));
       }
       function mapU(a, f) {
         var l = a.length;
@@ -1655,6 +1631,12 @@
       }
       function map(a, f) {
         return mapU(a, Curry.__1(f));
+      }
+      function flatMapU(a, f) {
+        return concatMany(mapU(a, f));
+      }
+      function flatMap(a, f) {
+        return concatMany(mapU(a, Curry.__1(f)));
       }
       function getByU(a, p) {
         var l = a.length;
@@ -1748,7 +1730,7 @@
         }
       }
       function forEachWithIndex(a, f) {
-        return forEachWithIndexU(a, Curry.__2(f));
+        forEachWithIndexU(a, Curry.__2(f));
       }
       function mapWithIndexU(a, f) {
         var l = a.length;
@@ -1783,7 +1765,7 @@
       }
       function reduceReverse2U(a, b, x, f) {
         var r = x;
-        var len = Caml.caml_int_min(a.length, b.length);
+        var len = Caml.int_min(a.length, b.length);
         for (var i = len - 1 | 0; i >= 0; --i) {
           r = f(r, a[i], b[i]);
         }
@@ -1855,14 +1837,14 @@
         ;
       }
       function every2U(a, b, p) {
-        return everyAux2(a, b, 0, p, Caml.caml_int_min(a.length, b.length));
+        return everyAux2(a, b, 0, p, Caml.int_min(a.length, b.length));
       }
       function every2(a, b, p) {
         return every2U(a, b, Curry.__2(p));
       }
       function some2U(a, b, p) {
         var _i = 0;
-        var len = Caml.caml_int_min(a.length, b.length);
+        var len = Caml.int_min(a.length, b.length);
         while (true) {
           var i = _i;
           if (i === len) {
@@ -1981,6 +1963,16 @@
       function joinWith(a, sep, toString) {
         return joinWithU(a, sep, Curry.__1(toString));
       }
+      function initU(n, f) {
+        var v = new Array(n);
+        for (var i = 0; i < n; ++i) {
+          v[i] = f(i);
+        }
+        return v;
+      }
+      function init2(n, f) {
+        return initU(n, Curry.__1(f));
+      }
       exports.get = get;
       exports.getExn = getExn;
       exports.set = set;
@@ -2011,6 +2003,8 @@
       exports.forEach = forEach;
       exports.mapU = mapU;
       exports.map = map;
+      exports.flatMapU = flatMapU;
+      exports.flatMap = flatMap;
       exports.getByU = getByU;
       exports.getBy = getBy;
       exports.getIndexByU = getIndexByU;
@@ -2049,6 +2043,8 @@
       exports.cmp = cmp;
       exports.eqU = eqU;
       exports.eq = eq;
+      exports.initU = initU;
+      exports.init = init2;
     }
   });
 
@@ -2366,7 +2362,7 @@
         var l2 = len - l1 | 0;
         sortTo(src, srcofs + l1 | 0, dst, dstofs + l1 | 0, l2, cmp);
         sortTo(src, srcofs, src, srcofs + l2 | 0, l1, cmp);
-        return merge(src, srcofs + l2 | 0, l1, dst, dstofs + l1 | 0, l2, dst, dstofs, cmp);
+        merge(src, srcofs + l2 | 0, l1, dst, dstofs + l1 | 0, l2, dst, dstofs, cmp);
       }
       function stableSortInPlaceByU(a, cmp) {
         var l = a.length;
@@ -2378,10 +2374,10 @@
         var t = new Array(l2);
         sortTo(a, l1, t, 0, l2, cmp);
         sortTo(a, 0, a, l2, l1, cmp);
-        return merge(a, l2, l1, t, 0, l2, a, 0, cmp);
+        merge(a, l2, l1, t, 0, l2, a, 0, cmp);
       }
       function stableSortInPlaceBy(a, cmp) {
-        return stableSortInPlaceByU(a, Curry.__2(cmp));
+        stableSortInPlaceByU(a, Curry.__2(cmp));
       }
       function stableSortByU(a, cmp) {
         var b = a.slice(0);
@@ -3220,7 +3216,7 @@
         ;
       }
       function forEach(xs, f) {
-        return forEachU(xs, Curry.__1(f));
+        forEachU(xs, Curry.__1(f));
       }
       function forEachWithIndexU(l, f) {
         var _xs = l;
@@ -3239,7 +3235,7 @@
         ;
       }
       function forEachWithIndex(l, f) {
-        return forEachWithIndexU(l, Curry.__2(f));
+        forEachWithIndexU(l, Curry.__2(f));
       }
       function reduceU(_l, _accu, f) {
         while (true) {
@@ -3341,7 +3337,7 @@
         ;
       }
       function forEach2(l1, l2, f) {
-        return forEach2U(l1, l2, Curry.__2(f));
+        forEach2U(l1, l2, Curry.__2(f));
       }
       function reduce2U(_l1, _l2, _accu, f) {
         while (true) {
@@ -3931,38 +3927,38 @@
       }
       function init2(param) {
         var piecesArr = [
-          Utils2.pawn(0, 0, 1),
-          Utils2.pawn(0, 1, 1),
-          Utils2.pawn(0, 2, 1),
-          Utils2.pawn(0, 3, 1),
-          Utils2.pawn(0, 4, 1),
-          Utils2.pawn(0, 5, 1),
-          Utils2.pawn(0, 6, 1),
-          Utils2.pawn(0, 7, 1),
-          Utils2.rook(0, 0, 0),
-          Utils2.rook(0, 7, 0),
-          Utils2.knight(0, 1, 0),
-          Utils2.knight(0, 6, 0),
-          Utils2.bishop(0, 2, 0),
-          Utils2.bishop(0, 5, 0),
-          Utils2.queen(0, 3, 0),
-          Utils2.king(0, 4, 0),
-          Utils2.pawn(1, 0, 6),
-          Utils2.pawn(1, 1, 6),
-          Utils2.pawn(1, 2, 6),
-          Utils2.pawn(1, 3, 6),
-          Utils2.pawn(1, 4, 6),
-          Utils2.pawn(1, 5, 6),
-          Utils2.pawn(1, 6, 6),
-          Utils2.pawn(1, 7, 6),
-          Utils2.rook(1, 0, 7),
-          Utils2.rook(1, 7, 7),
-          Utils2.knight(1, 1, 7),
-          Utils2.knight(1, 6, 7),
-          Utils2.bishop(1, 2, 7),
-          Utils2.bishop(1, 5, 7),
-          Utils2.queen(1, 3, 7),
-          Utils2.king(1, 4, 7)
+          Utils2.pawn("White", 0, 1),
+          Utils2.pawn("White", 1, 1),
+          Utils2.pawn("White", 2, 1),
+          Utils2.pawn("White", 3, 1),
+          Utils2.pawn("White", 4, 1),
+          Utils2.pawn("White", 5, 1),
+          Utils2.pawn("White", 6, 1),
+          Utils2.pawn("White", 7, 1),
+          Utils2.rook("White", 0, 0),
+          Utils2.rook("White", 7, 0),
+          Utils2.knight("White", 1, 0),
+          Utils2.knight("White", 6, 0),
+          Utils2.bishop("White", 2, 0),
+          Utils2.bishop("White", 5, 0),
+          Utils2.queen("White", 3, 0),
+          Utils2.king("White", 4, 0),
+          Utils2.pawn("Black", 0, 6),
+          Utils2.pawn("Black", 1, 6),
+          Utils2.pawn("Black", 2, 6),
+          Utils2.pawn("Black", 3, 6),
+          Utils2.pawn("Black", 4, 6),
+          Utils2.pawn("Black", 5, 6),
+          Utils2.pawn("Black", 6, 6),
+          Utils2.pawn("Black", 7, 6),
+          Utils2.rook("Black", 0, 7),
+          Utils2.rook("Black", 7, 7),
+          Utils2.knight("Black", 1, 7),
+          Utils2.knight("Black", 6, 7),
+          Utils2.bishop("Black", 2, 7),
+          Utils2.bishop("Black", 5, 7),
+          Utils2.queen("Black", 3, 7),
+          Utils2.king("Black", 4, 7)
         ];
         return {
           pieces: Belt_List.fromArray(piecesArr)
@@ -4384,6 +4380,26 @@
             return getUnobstructedCardinalPositions(piece, board);
         }
       }
+      function validBoard(board, movedColor) {
+        var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, function(p) {
+          if (p.TAG === 1) {
+            return p._0.color === movedColor;
+          } else {
+            return false;
+          }
+        }), 0);
+        var otherCoveredPositions = getCoveredPositionsForColor(board, Utils2.oppositeColor(movedColor));
+        return !Belt_List.has(otherCoveredPositions, [
+          Utils2.getX(ownKing),
+          Utils2.getY(ownKing)
+        ], function(param, param$1) {
+          if (param[0] === param$1[0]) {
+            return param[1] === param$1[1];
+          } else {
+            return false;
+          }
+        });
+      }
       function getCoveredPositionsForColor(board, color) {
         return coveredPositionsHelper(Belt_List.keep(board.pieces, function(p) {
           return Utils2.getColor(p) === color;
@@ -4426,26 +4442,6 @@
               ],
               tl: acc
             };
-          }
-        });
-      }
-      function validBoard(board, movedColor) {
-        var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, function(p) {
-          if (p.TAG === 1) {
-            return p._0.color === movedColor;
-          } else {
-            return false;
-          }
-        }), 0);
-        var otherCoveredPositions = getCoveredPositionsForColor(board, Utils2.oppositeColor(movedColor));
-        return !Belt_List.has(otherCoveredPositions, [
-          Utils2.getX(ownKing),
-          Utils2.getY(ownKing)
-        ], function(param, param$1) {
-          if (param[0] === param$1[0]) {
-            return param[1] === param$1[1];
-          } else {
-            return false;
           }
         });
       }
@@ -4514,8 +4510,7 @@
             if (k.hasMoved || k.inCheck) {
               return regularMoves;
             }
-            var match = k.color;
-            var y = match ? 7 : 0;
+            var y = Utils2.backRank(k);
             var leftRook = Board.getPiece(board, [
               0,
               y
@@ -4641,7 +4636,7 @@
       var stroke2 = 12;
       var size3 = 92;
       function positionToId2(x, y) {
-        return String.fromCharCode(x + 65 | 0) + (y + 1 | 0).toString();
+        return "" + String.fromCharCode(x + 65 | 0) + (y + 1 | 0).toString();
       }
       function makeSquare(x, y, color) {
         return {
@@ -4717,14 +4712,16 @@
         }
       }
       function getX2(square) {
-        if (square.color === 0) {
+        var match = square.color;
+        if (match === "White") {
           return Math.imul(square.x, size3);
         } else {
           return Math.imul(7 - square.x | 0, size3);
         }
       }
       function getY2(square) {
-        if (square.color === 0) {
+        var match = square.color;
+        if (match === "White") {
           return Math.imul(7 - square.y | 0, size3);
         } else {
           return Math.imul(square.y, size3);
@@ -4845,7 +4842,7 @@
         }
       }
       function forEach(opt, f) {
-        return forEachU(opt, Curry.__1(f));
+        forEachU(opt, Curry.__1(f));
       }
       function getExn(x) {
         if (x !== void 0) {
@@ -4887,6 +4884,13 @@
           return Caml_option.valFromOption(opt);
         } else {
           return $$default;
+        }
+      }
+      function orElse(opt, other) {
+        if (opt !== void 0) {
+          return opt;
+        } else {
+          return other;
         }
       }
       function isSome(param) {
@@ -4937,6 +4941,7 @@
       exports.flatMapU = flatMapU;
       exports.flatMap = flatMap;
       exports.getWithDefault = getWithDefault;
+      exports.orElse = orElse;
       exports.isSome = isSome;
       exports.isNone = isNone;
       exports.eqU = eqU;
@@ -4988,7 +4993,7 @@
       function init2(param) {
         return {
           board: Board.init(void 0),
-          turn: 0,
+          turn: "White",
           selectedPiece: void 0,
           legalMoves: void 0,
           cursorPosition: [
@@ -5040,7 +5045,8 @@
         if (numLegalMoves === 0) {
           Sounds2.winSound();
           if (ownKingInCheck) {
-            alert(Utils2.colorName(Utils2.oppositeColor(state_turn)) + " has won! Refresh the page to play again.");
+            var winner = Utils2.oppositeColor(state_turn);
+            alert("" + winner + " has won! Refresh the page to play again.");
           } else {
             alert("Stalemate! Refresh the page to play again.");
           }
@@ -5053,10 +5059,9 @@
             promote: state_promote,
             lock: true
           };
-        } else {
-          Sounds2.turnStartSound(state_turn);
-          return draw2(state$1);
         }
+        Sounds2.turnStartSound(state_turn);
+        return draw2(state$1);
       }
       function handleMoveCursor(state2) {
         Sounds2.cursorSound();
@@ -5091,66 +5096,7 @@
         var y = match[1];
         var x = match[0];
         var match$1 = state2.turn;
-        if (match$1) {
-          if (x >= 7) {
-            return state2;
-          }
-          var state_board = state2.board;
-          var state_turn = state2.turn;
-          var state_selectedPiece = state2.selectedPiece;
-          var state_legalMoves = state2.legalMoves;
-          var state_cursorPosition = [
-            x + 1 | 0,
-            y
-          ];
-          var state_promote = state2.promote;
-          var state_lock = state2.lock;
-          var state$1 = {
-            board: state_board,
-            turn: state_turn,
-            selectedPiece: state_selectedPiece,
-            legalMoves: state_legalMoves,
-            cursorPosition: state_cursorPosition,
-            promote: state_promote,
-            lock: state_lock
-          };
-          Sounds2.cursorSound();
-          return draw2(state$1);
-        }
-        if (x <= 0) {
-          return state2;
-        }
-        var state_board$1 = state2.board;
-        var state_turn$1 = state2.turn;
-        var state_selectedPiece$1 = state2.selectedPiece;
-        var state_legalMoves$1 = state2.legalMoves;
-        var state_cursorPosition$1 = [
-          x - 1 | 0,
-          y
-        ];
-        var state_promote$1 = state2.promote;
-        var state_lock$1 = state2.lock;
-        var state$2 = {
-          board: state_board$1,
-          turn: state_turn$1,
-          selectedPiece: state_selectedPiece$1,
-          legalMoves: state_legalMoves$1,
-          cursorPosition: state_cursorPosition$1,
-          promote: state_promote$1,
-          lock: state_lock$1
-        };
-        Sounds2.cursorSound();
-        return draw2(state$2);
-      }
-      function handleRight2(state2) {
-        var match = state2.cursorPosition;
-        if (state2.lock) {
-          return state2;
-        }
-        var y = match[1];
-        var x = match[0];
-        var match$1 = state2.turn;
-        if (match$1) {
+        if (match$1 === "White") {
           if (x <= 0) {
             return state2;
           }
@@ -5201,7 +5147,7 @@
         Sounds2.cursorSound();
         return draw2(state$2);
       }
-      function handleDown2(state2) {
+      function handleRight2(state2) {
         var match = state2.cursorPosition;
         if (state2.lock) {
           return state2;
@@ -5209,8 +5155,8 @@
         var y = match[1];
         var x = match[0];
         var match$1 = state2.turn;
-        if (match$1) {
-          if (y >= 7) {
+        if (match$1 === "White") {
+          if (x >= 7) {
             return state2;
           }
           var state_board = state2.board;
@@ -5218,8 +5164,8 @@
           var state_selectedPiece = state2.selectedPiece;
           var state_legalMoves = state2.legalMoves;
           var state_cursorPosition = [
-            x,
-            y + 1 | 0
+            x + 1 | 0,
+            y
           ];
           var state_promote = state2.promote;
           var state_lock = state2.lock;
@@ -5235,7 +5181,7 @@
           Sounds2.cursorSound();
           return draw2(state$1);
         }
-        if (y <= 0) {
+        if (x <= 0) {
           return state2;
         }
         var state_board$1 = state2.board;
@@ -5243,8 +5189,8 @@
         var state_selectedPiece$1 = state2.selectedPiece;
         var state_legalMoves$1 = state2.legalMoves;
         var state_cursorPosition$1 = [
-          x,
-          y - 1 | 0
+          x - 1 | 0,
+          y
         ];
         var state_promote$1 = state2.promote;
         var state_lock$1 = state2.lock;
@@ -5260,7 +5206,7 @@
         Sounds2.cursorSound();
         return draw2(state$2);
       }
-      function handleUp2(state2) {
+      function handleDown2(state2) {
         var match = state2.cursorPosition;
         if (state2.lock) {
           return state2;
@@ -5268,7 +5214,7 @@
         var y = match[1];
         var x = match[0];
         var match$1 = state2.turn;
-        if (match$1) {
+        if (match$1 === "White") {
           if (y <= 0) {
             return state2;
           }
@@ -5304,6 +5250,65 @@
         var state_cursorPosition$1 = [
           x,
           y + 1 | 0
+        ];
+        var state_promote$1 = state2.promote;
+        var state_lock$1 = state2.lock;
+        var state$2 = {
+          board: state_board$1,
+          turn: state_turn$1,
+          selectedPiece: state_selectedPiece$1,
+          legalMoves: state_legalMoves$1,
+          cursorPosition: state_cursorPosition$1,
+          promote: state_promote$1,
+          lock: state_lock$1
+        };
+        Sounds2.cursorSound();
+        return draw2(state$2);
+      }
+      function handleUp2(state2) {
+        var match = state2.cursorPosition;
+        if (state2.lock) {
+          return state2;
+        }
+        var y = match[1];
+        var x = match[0];
+        var match$1 = state2.turn;
+        if (match$1 === "White") {
+          if (y >= 7) {
+            return state2;
+          }
+          var state_board = state2.board;
+          var state_turn = state2.turn;
+          var state_selectedPiece = state2.selectedPiece;
+          var state_legalMoves = state2.legalMoves;
+          var state_cursorPosition = [
+            x,
+            y + 1 | 0
+          ];
+          var state_promote = state2.promote;
+          var state_lock = state2.lock;
+          var state$1 = {
+            board: state_board,
+            turn: state_turn,
+            selectedPiece: state_selectedPiece,
+            legalMoves: state_legalMoves,
+            cursorPosition: state_cursorPosition,
+            promote: state_promote,
+            lock: state_lock
+          };
+          Sounds2.cursorSound();
+          return draw2(state$1);
+        }
+        if (y <= 0) {
+          return state2;
+        }
+        var state_board$1 = state2.board;
+        var state_turn$1 = state2.turn;
+        var state_selectedPiece$1 = state2.selectedPiece;
+        var state_legalMoves$1 = state2.legalMoves;
+        var state_cursorPosition$1 = [
+          x,
+          y - 1 | 0
         ];
         var state_promote$1 = state2.promote;
         var state_lock$1 = state2.lock;

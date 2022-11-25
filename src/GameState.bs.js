@@ -12,53 +12,44 @@ var Belt_Option = require("rescript/lib/js/belt_Option.js");
 
 function drawGrid(prim) {
   GameUtils.drawGrid(prim);
-  
 }
 
 function endTurn(prim) {
   GameUtils.endTurn();
-  
 }
 
 function winSound(prim) {
   Sounds.winSound();
-  
 }
 
 function cursorSound(prim) {
   Sounds.cursorSound();
-  
 }
 
 function successSound(prim) {
   Sounds.successSound();
-  
 }
 
 function failureSound(prim) {
   Sounds.failureSound();
-  
 }
 
 function moveSound(prim) {
   Sounds.moveSound();
-  
 }
 
 function captureSound(prim) {
   Sounds.captureSound();
-  
 }
 
 function turnStartSound(prim) {
   Sounds.turnStartSound(prim);
-  
 }
 
 function init(param) {
   return {
           board: Board.init(undefined),
-          turn: /* White */0,
+          turn: "White",
           selectedPiece: undefined,
           legalMoves: undefined,
           cursorPosition: [
@@ -112,7 +103,8 @@ function handleTurnStart(state) {
   if (numLegalMoves === 0) {
     Sounds.winSound();
     if (ownKingInCheck) {
-      alert(Utils.colorName(Utils.oppositeColor(state_turn)) + " has won! Refresh the page to play again.");
+      var winner = Utils.oppositeColor(state_turn);
+      alert("" + winner + " has won! Refresh the page to play again.");
     } else {
       alert("Stalemate! Refresh the page to play again.");
     }
@@ -125,10 +117,9 @@ function handleTurnStart(state) {
             promote: state_promote,
             lock: true
           };
-  } else {
-    Sounds.turnStartSound(state_turn);
-    return draw(state$1);
   }
+  Sounds.turnStartSound(state_turn);
+  return draw(state$1);
 }
 
 function handleMoveCursor(state) {
@@ -166,67 +157,7 @@ function handleLeft(state) {
   var y = match[1];
   var x = match[0];
   var match$1 = state.turn;
-  if (match$1) {
-    if (x >= 7) {
-      return state;
-    }
-    var state_board = state.board;
-    var state_turn = state.turn;
-    var state_selectedPiece = state.selectedPiece;
-    var state_legalMoves = state.legalMoves;
-    var state_cursorPosition = [
-      x + 1 | 0,
-      y
-    ];
-    var state_promote = state.promote;
-    var state_lock = state.lock;
-    var state$1 = {
-      board: state_board,
-      turn: state_turn,
-      selectedPiece: state_selectedPiece,
-      legalMoves: state_legalMoves,
-      cursorPosition: state_cursorPosition,
-      promote: state_promote,
-      lock: state_lock
-    };
-    Sounds.cursorSound();
-    return draw(state$1);
-  }
-  if (x <= 0) {
-    return state;
-  }
-  var state_board$1 = state.board;
-  var state_turn$1 = state.turn;
-  var state_selectedPiece$1 = state.selectedPiece;
-  var state_legalMoves$1 = state.legalMoves;
-  var state_cursorPosition$1 = [
-    x - 1 | 0,
-    y
-  ];
-  var state_promote$1 = state.promote;
-  var state_lock$1 = state.lock;
-  var state$2 = {
-    board: state_board$1,
-    turn: state_turn$1,
-    selectedPiece: state_selectedPiece$1,
-    legalMoves: state_legalMoves$1,
-    cursorPosition: state_cursorPosition$1,
-    promote: state_promote$1,
-    lock: state_lock$1
-  };
-  Sounds.cursorSound();
-  return draw(state$2);
-}
-
-function handleRight(state) {
-  var match = state.cursorPosition;
-  if (state.lock) {
-    return state;
-  }
-  var y = match[1];
-  var x = match[0];
-  var match$1 = state.turn;
-  if (match$1) {
+  if (match$1 === "White") {
     if (x <= 0) {
       return state;
     }
@@ -278,7 +209,7 @@ function handleRight(state) {
   return draw(state$2);
 }
 
-function handleDown(state) {
+function handleRight(state) {
   var match = state.cursorPosition;
   if (state.lock) {
     return state;
@@ -286,8 +217,8 @@ function handleDown(state) {
   var y = match[1];
   var x = match[0];
   var match$1 = state.turn;
-  if (match$1) {
-    if (y >= 7) {
+  if (match$1 === "White") {
+    if (x >= 7) {
       return state;
     }
     var state_board = state.board;
@@ -295,8 +226,8 @@ function handleDown(state) {
     var state_selectedPiece = state.selectedPiece;
     var state_legalMoves = state.legalMoves;
     var state_cursorPosition = [
-      x,
-      y + 1 | 0
+      x + 1 | 0,
+      y
     ];
     var state_promote = state.promote;
     var state_lock = state.lock;
@@ -312,7 +243,7 @@ function handleDown(state) {
     Sounds.cursorSound();
     return draw(state$1);
   }
-  if (y <= 0) {
+  if (x <= 0) {
     return state;
   }
   var state_board$1 = state.board;
@@ -320,8 +251,8 @@ function handleDown(state) {
   var state_selectedPiece$1 = state.selectedPiece;
   var state_legalMoves$1 = state.legalMoves;
   var state_cursorPosition$1 = [
-    x,
-    y - 1 | 0
+    x - 1 | 0,
+    y
   ];
   var state_promote$1 = state.promote;
   var state_lock$1 = state.lock;
@@ -338,7 +269,7 @@ function handleDown(state) {
   return draw(state$2);
 }
 
-function handleUp(state) {
+function handleDown(state) {
   var match = state.cursorPosition;
   if (state.lock) {
     return state;
@@ -346,7 +277,7 @@ function handleUp(state) {
   var y = match[1];
   var x = match[0];
   var match$1 = state.turn;
-  if (match$1) {
+  if (match$1 === "White") {
     if (y <= 0) {
       return state;
     }
@@ -382,6 +313,66 @@ function handleUp(state) {
   var state_cursorPosition$1 = [
     x,
     y + 1 | 0
+  ];
+  var state_promote$1 = state.promote;
+  var state_lock$1 = state.lock;
+  var state$2 = {
+    board: state_board$1,
+    turn: state_turn$1,
+    selectedPiece: state_selectedPiece$1,
+    legalMoves: state_legalMoves$1,
+    cursorPosition: state_cursorPosition$1,
+    promote: state_promote$1,
+    lock: state_lock$1
+  };
+  Sounds.cursorSound();
+  return draw(state$2);
+}
+
+function handleUp(state) {
+  var match = state.cursorPosition;
+  if (state.lock) {
+    return state;
+  }
+  var y = match[1];
+  var x = match[0];
+  var match$1 = state.turn;
+  if (match$1 === "White") {
+    if (y >= 7) {
+      return state;
+    }
+    var state_board = state.board;
+    var state_turn = state.turn;
+    var state_selectedPiece = state.selectedPiece;
+    var state_legalMoves = state.legalMoves;
+    var state_cursorPosition = [
+      x,
+      y + 1 | 0
+    ];
+    var state_promote = state.promote;
+    var state_lock = state.lock;
+    var state$1 = {
+      board: state_board,
+      turn: state_turn,
+      selectedPiece: state_selectedPiece,
+      legalMoves: state_legalMoves,
+      cursorPosition: state_cursorPosition,
+      promote: state_promote,
+      lock: state_lock
+    };
+    Sounds.cursorSound();
+    return draw(state$1);
+  }
+  if (y <= 0) {
+    return state;
+  }
+  var state_board$1 = state.board;
+  var state_turn$1 = state.turn;
+  var state_selectedPiece$1 = state.selectedPiece;
+  var state_legalMoves$1 = state.legalMoves;
+  var state_cursorPosition$1 = [
+    x,
+    y - 1 | 0
   ];
   var state_promote$1 = state.promote;
   var state_lock$1 = state.lock;

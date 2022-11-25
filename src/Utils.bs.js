@@ -3,15 +3,7 @@
 
 
 function oppositeColor(color) {
-  if (color) {
-    return /* White */0;
-  } else {
-    return /* Black */1;
-  }
-}
-
-function colorName(color) {
-  if (color) {
+  if (color === "White") {
     return "Black";
   } else {
     return "White";
@@ -21,29 +13,17 @@ function colorName(color) {
 function getAsset(piece) {
   switch (piece.TAG | 0) {
     case /* Pawn */0 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/pawn";
+        return "assets/" + piece._0.color + "/pawn";
     case /* King */1 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/king";
+        return "assets/" + piece._0.color + "/king";
     case /* Queen */2 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/queen";
+        return "assets/" + piece._0.color + "/queen";
     case /* Bishop */3 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/bishop";
+        return "assets/" + piece._0.color + "/bishop";
     case /* Knight */4 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/knight";
+        return "assets/" + piece._0.color + "/knight";
     case /* Rook */5 :
-        return "assets/" + (
-                piece._0.color ? "Black" : "White"
-              ) + "/rook";
+        return "assets/" + piece._0.color + "/rook";
     
   }
 }
@@ -80,7 +60,6 @@ function toggleEmphasis(piece) {
   }
   var p = piece._0;
   p.emphasizeCoverRange = !p.emphasizeCoverRange;
-  
 }
 
 function getX(piece) {
@@ -295,28 +274,28 @@ function withPosition(piece, param) {
 
 function promotionRank(p) {
   var match = p.color;
-  if (match) {
-    return 0;
-  } else {
+  if (match === "White") {
     return 7;
+  } else {
+    return 0;
   }
 }
 
 function backRank(p) {
   var match = p.color;
-  if (match) {
-    return 7;
-  } else {
+  if (match === "White") {
     return 0;
+  } else {
+    return 7;
   }
 }
 
 function pawnOffsetHelper(p, n) {
   var match = p.color;
-  if (match) {
-    return -n | 0;
-  } else {
+  if (match === "White") {
     return n;
+  } else {
+    return -n | 0;
   }
 }
 
@@ -401,7 +380,6 @@ function knight(color, x, y) {
 }
 
 exports.oppositeColor = oppositeColor;
-exports.colorName = colorName;
 exports.getAsset = getAsset;
 exports.getColor = getColor;
 exports.getEmphasis = getEmphasis;

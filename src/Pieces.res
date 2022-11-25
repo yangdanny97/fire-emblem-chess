@@ -155,10 +155,7 @@ and getLegalMoves = (piece, board) => {
       if k.hasMoved || k.inCheck {
         regularMoves
       } else {
-        let y = switch k.color {
-        | White => 0
-        | Black => 7
-        }
+        let y = backRank(k)
         let leftRook = Board.getPiece(board, (0, y), Some(k.color))
         let rightRook = Board.getPiece(board, (7, y), Some(k.color))
         let leftCastle = switch leftRook {

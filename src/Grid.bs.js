@@ -12,7 +12,7 @@ var stroke = 12;
 var size = 92;
 
 function positionToId(x, y) {
-  return String.fromCharCode(x + 65 | 0) + (y + 1 | 0).toString();
+  return "" + String.fromCharCode(x + 65 | 0) + "" + (y + 1 | 0).toString() + "";
 }
 
 function makeSquare(x, y, color) {
@@ -41,15 +41,12 @@ function makeGrid(state) {
         }));
   Belt_List.forEach(state.board.pieces, (function (p) {
           Caml_array.get(Caml_array.get(grid, Utils.getX(p)), Utils.getY(p)).piece = p;
-          
         }));
   Belt_List.forEach(coveredPositions, (function (param) {
           Caml_array.get(Caml_array.get(grid, param[0]), param[1]).covered = true;
-          
         }));
   Belt_List.forEach(emphasizedCoveredPositions, (function (param) {
           Caml_array.get(Caml_array.get(grid, param[0]), param[1]).coveredAndSelected = true;
-          
         }));
   Caml_array.get(Caml_array.get(grid, match[0]), match[1]).selection = true;
   var p = state.selectedPiece;
@@ -59,7 +56,6 @@ function makeGrid(state) {
     if (l !== undefined) {
       Belt_List.forEach(l, (function (param) {
               Caml_array.get(Caml_array.get(grid, param[0]), param[1]).movement = true;
-              
             }));
     }
     
@@ -101,7 +97,8 @@ function getOverlayColor(square) {
 }
 
 function getX(square) {
-  if (square.color === /* White */0) {
+  var match = square.color;
+  if (match === "White") {
     return Math.imul(square.x, size);
   } else {
     return Math.imul(7 - square.x | 0, size);
@@ -109,7 +106,8 @@ function getX(square) {
 }
 
 function getY(square) {
-  if (square.color === /* White */0) {
+  var match = square.color;
+  if (match === "White") {
     return Math.imul(7 - square.y | 0, size);
   } else {
     return Math.imul(square.y, size);

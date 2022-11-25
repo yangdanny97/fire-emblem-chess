@@ -276,6 +276,27 @@ function getCoveredPositions(piece, board) {
   }
 }
 
+function validBoard(board, movedColor) {
+  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
+              if (p.TAG === /* King */1) {
+                return p._0.color === movedColor;
+              } else {
+                return false;
+              }
+            })), 0);
+  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
+  return !Belt_List.has(otherCoveredPositions, [
+              Utils.getX(ownKing),
+              Utils.getY(ownKing)
+            ], (function (param, param$1) {
+                if (param[0] === param$1[0]) {
+                  return param[1] === param$1[1];
+                } else {
+                  return false;
+                }
+              }));
+}
+
 function getCoveredPositionsForColor(board, color) {
   return coveredPositionsHelper(Belt_List.keep(board.pieces, (function (p) {
                     return Utils.getColor(p) === color;
@@ -319,27 +340,6 @@ function coveredPositionsHelper(pieces, board) {
                           ],
                           tl: acc
                         };
-                }
-              }));
-}
-
-function validBoard(board, movedColor) {
-  var ownKing = Belt_List.getExn(Belt_List.keep(board.pieces, (function (p) {
-              if (p.TAG === /* King */1) {
-                return p._0.color === movedColor;
-              } else {
-                return false;
-              }
-            })), 0);
-  var otherCoveredPositions = getCoveredPositionsForColor(board, Utils.oppositeColor(movedColor));
-  return !Belt_List.has(otherCoveredPositions, [
-              Utils.getX(ownKing),
-              Utils.getY(ownKing)
-            ], (function (param, param$1) {
-                if (param[0] === param$1[0]) {
-                  return param[1] === param$1[1];
-                } else {
-                  return false;
                 }
               }));
 }
@@ -412,8 +412,7 @@ function getLegalMoves(piece, board) {
         if (k.hasMoved || k.inCheck) {
           return regularMoves;
         }
-        var match = k.color;
-        var y = match ? 7 : 0;
+        var y = Utils.backRank(k);
         var leftRook = Board.getPiece(board, [
               0,
               y

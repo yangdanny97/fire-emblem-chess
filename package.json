@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "bs-platform": "^9.0.2",
-    "rescript": "^9.1.4"
+    "rescript": "^10.0.1"
   },
   "scripts": {
     "build": "rescript",

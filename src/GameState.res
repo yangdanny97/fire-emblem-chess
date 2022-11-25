@@ -14,7 +14,7 @@ open Belt
 
 let init = () => {
   board: Board.init(),
-  turn: White,
+  turn: #White,
   selectedPiece: None,
   legalMoves: None,
   cursorPosition: (4, 0),
@@ -52,7 +52,8 @@ let handleTurnStart = state => {
     // lock the game for now
     winSound()
     if ownKingInCheck {
-      alert(`${colorName(oppositeColor(state.turn))} has won! Refresh the page to play again.`)
+      let winner = oppositeColor(state.turn)
+      alert(`${winner :> string} has won! Refresh the page to play again.`)
     } else {
       alert("Stalemate! Refresh the page to play again.")
     }
@@ -96,8 +97,8 @@ let handleLeft = state => {
     state
   } else {
     switch state.turn {
-    | White if x > 0 => handleMoveCursor({...state, cursorPosition: (x - 1, y)})
-    | Black if x < 7 => handleMoveCursor({...state, cursorPosition: (x + 1, y)})
+    | #White if x > 0 => handleMoveCursor({...state, cursorPosition: (x - 1, y)})
+    | #Black if x < 7 => handleMoveCursor({...state, cursorPosition: (x + 1, y)})
     | _ => state
     }
   }
@@ -108,8 +109,8 @@ let handleRight = state => {
     state
   } else {
     switch state.turn {
-    | White if x < 7 => handleMoveCursor({...state, cursorPosition: (x + 1, y)})
-    | Black if x > 0 => handleMoveCursor({...state, cursorPosition: (x - 1, y)})
+    | #White if x < 7 => handleMoveCursor({...state, cursorPosition: (x + 1, y)})
+    | #Black if x > 0 => handleMoveCursor({...state, cursorPosition: (x - 1, y)})
     | _ => state
     }
   }
@@ -121,8 +122,8 @@ let handleDown = state => {
     state
   } else {
     switch state.turn {
-    | White if y > 0 => handleMoveCursor({...state, cursorPosition: (x, y - 1)})
-    | Black if y < 7 => handleMoveCursor({...state, cursorPosition: (x, y + 1)})
+    | #White if y > 0 => handleMoveCursor({...state, cursorPosition: (x, y - 1)})
+    | #Black if y < 7 => handleMoveCursor({...state, cursorPosition: (x, y + 1)})
     | _ => state
     }
   }
@@ -134,8 +135,8 @@ let handleUp = state => {
     state
   } else {
     switch state.turn {
-    | White if y < 7 => handleMoveCursor({...state, cursorPosition: (x, y + 1)})
-    | Black if y > 0 => handleMoveCursor({...state, cursorPosition: (x, y - 1)})
+    | #White if y < 7 => handleMoveCursor({...state, cursorPosition: (x, y + 1)})
+    | #Black if y > 0 => handleMoveCursor({...state, cursorPosition: (x, y - 1)})
     | _ => state
     }
   }

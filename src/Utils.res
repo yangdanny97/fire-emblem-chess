@@ -1,6 +1,4 @@
-type color =
-  | White
-  | Black
+type color = [ #White | #Black ]
 
 type position = (int, int)
 type piece = {x: int, y: int, color: color, hasMoved: bool, mutable emphasizeCoverRange: bool}
@@ -38,28 +36,21 @@ type state = {
   lock: bool,
 }
 
-let oppositeColor = color => {
+let oppositeColor = (color: color): color => {
   switch color {
-  | White => Black
-  | Black => White
-  }
-}
-
-let colorName = color => {
-  switch color {
-  | White => "White"
-  | Black => "Black"
+  | #White => #Black
+  | #Black => #White
   }
 }
 
 let getAsset = piece => {
   switch piece {
-  | Pawn(p) => `assets/${colorName(p.color)}/pawn`
-  | King(k) => `assets/${colorName(k.color)}/king`
-  | Queen(q) => `assets/${colorName(q.color)}/queen`
-  | Bishop(b) => `assets/${colorName(b.color)}/bishop`
-  | Knight(n) => `assets/${colorName(n.color)}/knight`
-  | Rook(r) => `assets/${colorName(r.color)}/rook`
+  | Pawn(p) => `assets/${p.color :> string}/pawn`
+  | King(k) => `assets/${k.color :> string}/king`
+  | Queen(q) => `assets/${q.color :> string}/queen`
+  | Bishop(b) => `assets/${b.color :> string}/bishop`
+  | Knight(n) => `assets/${n.color :> string}/knight`
+  | Rook(r) => `assets/${r.color :> string}/rook`
   }
 }
 
@@ -155,22 +146,22 @@ let withPosition = (piece, (x, y)) => {
 
 let promotionRank = (p: pawn) => {
   switch p.color {
-  | White => 7
-  | Black => 0
+  | #White => 7
+  | #Black => 0
   }
 }
 
 let backRank = (p: king) => {
   switch p.color {
-  | White => 0
-  | Black => 7
+  | #White => 0
+  | #Black => 7
   }
 }
 
 let pawnOffsetHelper = (p: pawn, n) => {
   switch p.color {
-  | White => n
-  | Black => -n
+  | #White => n
+  | #Black => -n
   }
 }
 

@@ -1,9 +1,7 @@
 rescript:
-	npm run-script re:build
-webpack:
-	npx webpack
+	npm run-script build
 build:
-	make rescript && npx webpack
+	npm run-script build && npm run-script bundle
 server:
 	python3 -m http.server
 clean:
