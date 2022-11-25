@@ -4,6 +4,7 @@
 var Curry = require("rescript/lib/js/curry.js");
 var Utils = require("./Utils.bs.js");
 var Belt_List = require("rescript/lib/js/belt_List.js");
+var Belt_Option = require("rescript/lib/js/belt_Option.js");
 
 function board(piecesArr) {
   return {
@@ -65,7 +66,7 @@ function getPiece(board, param, color) {
 }
 
 function hasPiece(board, position, color) {
-  return getPiece(board, position, color) !== undefined;
+  return Belt_Option.isSome(getPiece(board, position, color));
 }
 
 function hasOppositeColoredPiece(board, position, color) {
@@ -130,22 +131,16 @@ function confirmMove(board, piece, position, param) {
         var k = piece._0;
         var y = Utils.backRank(k);
         var castleHelper = function (oldRookX, newRookX, board) {
-          var rook = getPiece(board, [
-                oldRookX,
-                y
-              ], undefined);
-          if (rook !== undefined) {
-            return function (b) {
-              return confirmMove(b, rook, [
-                          newRookX,
-                          y
-                        ], true);
-            };
-          }
-          throw {
-                RE_EXN_ID: "Not_found",
-                Error: new Error()
-              };
+          var rook = Belt_Option.getExn(getPiece(board, [
+                    oldRookX,
+                    y
+                  ], undefined));
+          return function (b) {
+            return confirmMove(b, rook, [
+                        newRookX,
+                        y
+                      ], true);
+          };
         };
         match = k.hasMoved ? [
             Utils.withMoved(Utils.withPosition(piece, position)),

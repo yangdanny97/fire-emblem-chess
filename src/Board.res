@@ -56,10 +56,7 @@ let getPiece = (board, (x, y), color) => {
 }
 
 let hasPiece = (board, position, color) => {
-  switch getPiece(board, position, color) {
-  | Some(_) => true
-  | None => false
-  }
+  getPiece(board, position, color)->Option.isSome
 }
 
 let hasOppositeColoredPiece = (board, position, color) => {
@@ -106,11 +103,8 @@ let rec confirmMove = (board, piece, position, _) => {
   | King(k) => {
       let y = backRank(k)
       let castleHelper = (oldRookX, newRookX, board) => {
-        let rook = getPiece(board, (oldRookX, y), None)
-        switch rook {
-        | Some(r) => b => confirmMove(b, r, (newRookX, y), true)
-        | None => raise(Not_found)
-        }
+        let rook = getPiece(board, (oldRookX, y), None)->Option.getExn
+        b => confirmMove(b, rook, (newRookX, y), true)
       }
       if !k.hasMoved {
         if newX === 2 && newY === y {
