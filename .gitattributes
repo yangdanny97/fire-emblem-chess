@@ -1,3 +1,2 @@
-src/*.bs.js linguist-generated
+src/*.res.mjs linguist-generated
 out/game.js linguist-generated
-webpack.config.js linguist-generated
