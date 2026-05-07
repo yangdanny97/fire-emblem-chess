@@ -19,7 +19,7 @@ type grid = {
 }
 
 let positionToId = (x, y) => {
-  `${Js.String.fromCharCode(x + 65)}${Js.Int.toString(y + 1)}`
+  `${String.fromCharCode(x + 65)}${Int.toString(y + 1)}`
 }
 
 let makeSquare = (x, y, color) => {
@@ -43,32 +43,35 @@ let makeGrid = state => {
     otherColor,
   )
 
-  let grid = Belt.Array.makeBy(8, x => Belt.Array.makeBy(8, y => makeSquare(x, y, state.turn)))
+  let grid = Array.fromInitializer(~length=8, x =>
+    Array.fromInitializer(~length=8, y => makeSquare(x, y, state.turn))
+  )
 
-  Belt.List.forEach(state.board.pieces, p => {
-    grid[getX(p)][getY(p)].piece = Some(p)
+  List.forEach(state.board.pieces, p => {
+    (grid->Array.getUnsafe(getX(p))->Array.getUnsafe(getY(p))).piece = Some(p)
   })
 
-  Belt.List.forEach(coveredPositions, ((x, y)) => {
-    grid[x][y].covered = true
+  List.forEach(coveredPositions, ((x, y)) => {
+    (grid->Array.getUnsafe(x)->Array.getUnsafe(y)).covered = true
   })
-  Belt.List.forEach(emphasizedCoveredPositions, ((x, y)) => {
-    grid[x][y].coveredAndSelected = true
+  List.forEach(emphasizedCoveredPositions, ((x, y)) => {
+    (grid->Array.getUnsafe(x)->Array.getUnsafe(y)).coveredAndSelected = true
   })
 
-  grid[cursorX][cursorY].selection = true
+  (grid->Array.getUnsafe(cursorX)->Array.getUnsafe(cursorY)).selection = true
   switch state.selectedPiece {
   | Some(p) => {
-      grid[getX(p)][getY(p)].selection = true
+      (grid->Array.getUnsafe(getX(p))->Array.getUnsafe(getY(p))).selection = true
       switch state.legalMoves {
-      | Some(l) => Belt.List.forEach(l, ((x, y)) => grid[x][y].movement = true)
+      | Some(l) =>
+        List.forEach(l, ((x, y)) => (grid->Array.getUnsafe(x)->Array.getUnsafe(y)).movement = true)
       | _ => ()
       }
     }
 
   | None => ()
   }
-  Belt.Array.concatMany(grid)
+  Array.concatMany([], grid)
 }
 
 let getInCheck = square => {

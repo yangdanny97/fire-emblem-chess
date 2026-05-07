@@ -1,5 +1,4 @@
 open Utils
-open Belt
 
 @val external alert: string => unit = "alert"
 @module("./GameUtils") external drawGrid: array<Grid.grid> => unit = "drawGrid"
@@ -37,12 +36,12 @@ let handleTurnStart = state => {
   let color = state.turn
   // make sure player is not checkmated
   let otherColor = oppositeColor(color)
-  let ownKing = List.keep(state.board.pieces, p => {
+  let ownKing = List.filter(state.board.pieces, p => {
     switch p {
     | King(k) => k.color === color
     | _ => false
     }
-  })->List.getExn(0)
+  })->List.getOrThrow(0)
   let otherCoveredPositions = Pieces.getCoveredPositionsForColor(state.board, otherColor)
   let ownKingInCheck = List.has(otherCoveredPositions, ownKing, ((x, y), king) =>
     x === getX(king) && y === getY(king)
@@ -149,18 +148,18 @@ let handlePromote = (state, key) => {
     state
   } else {
     let maybePiece = switch (state.selectedPiece, key) {
-    | (Some(p), 66) => Some(bishop(getColor(p), getX(p), getY(p)))
+    | (Some(p), "b") => Some(bishop(getColor(p), getX(p), getY(p)))
 
-    | (Some(p), 78) => Some(knight(getColor(p), getX(p), getY(p)))
+    | (Some(p), "n") => Some(knight(getColor(p), getX(p), getY(p)))
 
-    | (Some(p), 82) => Some(rook(getColor(p), getX(p), getY(p)))
+    | (Some(p), "r") => Some(rook(getColor(p), getX(p), getY(p)))
 
-    | (Some(p), 81) => Some(queen(getColor(p), getX(p), getY(p)))
+    | (Some(p), "q") => Some(queen(getColor(p), getX(p), getY(p)))
     | _ => None
     }
     switch maybePiece {
     | Some(piece) => {
-        let pieces = List.keep(state.board.pieces, p =>
+        let pieces = List.filter(state.board.pieces, p =>
           getX(p) != getX(piece) || getY(p) != getY(piece)
         )
         let board = {
@@ -188,14 +187,14 @@ let handleSelect = state => {
     let (x, y) = state.cursorPosition
     let moveHelper = state => {
       // try to move
-      let selectedPiece = Option.getExn(state.selectedPiece)
+      let selectedPiece = Option.getOrThrow(state.selectedPiece)
       let promote = ((_, y)) =>
         switch selectedPiece {
         | Pawn(p) if promotionRank(p) === y => true
         | _ => false
         }
       let legalMove = Option.flatMap(state.legalMoves, moves =>
-        List.keep(moves, ((mx, my)) => mx === x && my === y)->List.get(0)
+        List.filter(moves, ((mx, my)) => mx === x && my === y)->List.get(0)
       )
       switch legalMove {
       | Some(move) => {

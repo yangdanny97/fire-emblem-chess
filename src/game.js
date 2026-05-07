@@ -1,39 +1,47 @@
-import * as Grid from './Grid.bs.js';
+import * as Grid from './Grid.res.mjs';
 import * as Sounds from './Sounds.js';
 import * as GameUtils from './GameUtils.js';
-import * as GameState from './GameState.bs.js';
+import * as GameState from './GameState.res.mjs';
+
+const audioCtx = new AudioContext();
+
+const start = document.getElementById("start");
+
+start.addEventListener("click", async () => {
+  await audioCtx.resume();
+  start.remove();
+});
 
 function setup() {
-    var body = d3.select("body");
-    body.on("keydown", () => {
-        var key = d3.event.keyCode;
-        switch (key) {
-            case 38:
-            case 87: // W
+    let body = d3.select("body");
+    body.on("keydown", async event => {
+        switch (event.key) {
+            case "ArrowUp":
+            case "w": // W
                 state = GameState.handleUp(state);
                 break;
-            case 37:
-            case 65: // A
+            case "ArrowLeft":
+            case "a": // A
                 state = GameState.handleLeft(state);
                 break;
-            case 40:
-            case 83: // S
+            case "ArrowDown":
+            case "s": // S
                 state = GameState.handleDown(state);
                 break;
-            case 39:
-            case 68: // D
+            case "ArrowRight":
+            case "d": // D
                 state = GameState.handleRight(state);
                 break;
-            case 88: // X
+            case "x": // X
                 state = GameState.handleSelect(state);
                 break;
-            case 90: // Z
+            case "z": // Z
                 state = GameState.handleCancel(state);
                 break;
-            case 66: // B
-            case 78: // N
-            case 82: // R
-            case 81: // Q
+            case "b": // B
+            case "n": // N
+            case "r": // R
+            case "q": // Q
                 state = GameState.handlePromote(state, key);
                 break;
         }

@@ -1,4 +1,3 @@
-open Belt
 open Utils
 
 let canCover = (piece, board, position) => {
@@ -36,31 +35,31 @@ let unobstructedPositionsHelper = (piece, board, a, b, c, d) => {
     let (_, res) = List.reduce(l, (true, list{}), positionHelper)
     res
   })
-  ->List.flatten
+  ->List.flat
 }
 
 let getUnobstructedCardinalPositions = (piece, board) => {
-  let up = List.makeBy(7 - getY(piece), i => (getX(piece), getY(piece) + i + 1))
-  let down = List.makeBy(getY(piece), i => (getX(piece), getY(piece) - i - 1))
-  let left = List.makeBy(getX(piece), i => (getX(piece) - i - 1, getY(piece)))
-  let right = List.makeBy(7 - getX(piece), i => (getX(piece) + i + 1, getY(piece)))
+  let up = List.fromInitializer(~length=7 - getY(piece), i => (getX(piece), getY(piece) + i + 1))
+  let down = List.fromInitializer(~length=getY(piece), i => (getX(piece), getY(piece) - i - 1))
+  let left = List.fromInitializer(~length=getX(piece), i => (getX(piece) - i - 1, getY(piece)))
+  let right = List.fromInitializer(~length=7 - getX(piece), i => (getX(piece) + i + 1, getY(piece)))
   unobstructedPositionsHelper(piece, board, up, down, left, right)
 }
 
 let getUnobstructedDiagonalPositions = (piece, board) => {
-  let ul = List.makeBy(Js.Math.min_int(getX(piece), 7 - getY(piece)), i => (
+  let ul = List.fromInitializer(~length=Math.Int.min(getX(piece), 7 - getY(piece)), i => (
     getX(piece) - i - 1,
     getY(piece) + i + 1,
   ))
-  let ur = List.makeBy(7 - Js.Math.max_int(getX(piece), getY(piece)), i => (
+  let ur = List.fromInitializer(~length=7 - Math.Int.max(getX(piece), getY(piece)), i => (
     getX(piece) + i + 1,
     getY(piece) + i + 1,
   ))
-  let dl = List.makeBy(Js.Math.min_int(getX(piece), getY(piece)), i => (
+  let dl = List.fromInitializer(~length=Math.Int.min(getX(piece), getY(piece)), i => (
     getX(piece) - i - 1,
     getY(piece) - i - 1,
   ))
-  let dr = List.makeBy(Js.Math.min_int(7 - getX(piece), getY(piece)), i => (
+  let dr = List.fromInitializer(~length=Math.Int.min(7 - getX(piece), getY(piece)), i => (
     getX(piece) + i + 1,
     getY(piece) - i - 1,
   ))
@@ -74,7 +73,7 @@ let rec getCoveredPositions = (piece, board) => {
         (p.x - 1, p.y + pawnOffsetHelper(p, 1)),
         (p.x + 1, p.y + pawnOffsetHelper(p, 1)),
       }
-      List.keep(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
+      List.filter(positions, ((x, y)) => y >= 0 && y <= 7 && canCover(piece, board, (x, y)))
     }
 
   | King(k) => {
@@ -88,7 +87,7 @@ let rec getCoveredPositions = (piece, board) => {
         (k.x + 1, k.y - 1),
         (k.x + 1, k.y + 1),
       }
-      List.keep(positions, p => canCover(piece, board, p))
+      List.filter(positions, p => canCover(piece, board, p))
     }
 
   | Queen(_) =>
@@ -108,7 +107,7 @@ let rec getCoveredPositions = (piece, board) => {
         (n.x + 2, n.y - 1),
         (n.x + 2, n.y + 1),
       }
-      List.keep(positions, p => canCover(piece, board, p))
+      List.filter(positions, p => canCover(piece, board, p))
     }
 
   | Rook(_) => getUnobstructedCardinalPositions(piece, board)
@@ -134,7 +133,7 @@ and getLegalMoves = (piece, board) => {
       } else {
         list{}
       }
-      let capture = getCoveredPositions(piece, board)->List.keep(pos => {
+      let capture = getCoveredPositions(piece, board)->List.filter(pos => {
         if Board.hasOppositeColoredPiece(board, pos, p.color) {
           // regular capture
           true
@@ -148,12 +147,12 @@ and getLegalMoves = (piece, board) => {
           }
         }
       })
-      List.concat(movement, capture)->List.keep(pos => validStateForMove(board, Pawn(p), pos))
+      List.concat(movement, capture)->List.filter(pos => validStateForMove(board, Pawn(p), pos))
     }
 
   | King(k) => {
       let regularMoves =
-        getCoveredPositions(piece, board)->List.keep(p =>
+        getCoveredPositions(piece, board)->List.filter(p =>
           Board.checkUnobstructed(board, King(k), p, true) && validStateForMove(board, piece, p)
         )
       if k.hasMoved || k.inCheck {
@@ -208,7 +207,7 @@ and getLegalMoves = (piece, board) => {
   | Bishop(_)
   | Knight(_)
   | Rook(_) =>
-    getCoveredPositions(piece, board)->List.keep(pos =>
+    getCoveredPositions(piece, board)->List.filter(pos =>
       Board.checkUnobstructed(board, piece, pos, true) && validStateForMove(board, piece, pos)
     )
   }
@@ -216,13 +215,13 @@ and getLegalMoves = (piece, board) => {
 
 and coveredPositionsHelper = (pieces, board) => {
   List.reduce(pieces, list{}, (acc, p) => list{getCoveredPositions(p, board), ...acc})
-  ->List.flatten
+  ->List.flat
   ->List.sort(((x1, y1), (x2, y2)) =>
-    if x1 === x2 {
+    (if x1 === x2 {
       y1 - y2
     } else {
       x1 - x2
-    }
+    } :> float)
   )
   ->List.reduce(list{}, (acc, (x1, y1)) => {
     switch acc {
@@ -238,16 +237,16 @@ and coveredPositionsHelper = (pieces, board) => {
 }
 
 and getCoveredPositionsForColor = (board, color) => {
-  List.keep(board.pieces, p => getColor(p) === color)->coveredPositionsHelper(board)
+  List.filter(board.pieces, p => getColor(p) === color)->coveredPositionsHelper(board)
 }
 
 and validBoard = (board, movedColor) => {
-  let ownKing = List.keep(board.pieces, p => {
+  let ownKing = List.filter(board.pieces, p => {
     switch p {
     | King(k) => k.color === movedColor
     | _ => false
     }
-  })->List.getExn(0)
+  })->List.getOrThrow(0)
   let otherCoveredPositions = getCoveredPositionsForColor(board, oppositeColor(movedColor))
   !List.has(otherCoveredPositions, (getX(ownKing), getY(ownKing)), ((x1, y1), (x2, y2)) =>
     x1 === x2 && y1 === y2
@@ -255,13 +254,13 @@ and validBoard = (board, movedColor) => {
 }
 
 let getEmphasizedCoveredPositionsForColor = (board, color) => {
-  List.keep(board.pieces, p => getColor(p) === color && getEmphasis(p))->coveredPositionsHelper(
+  List.filter(board.pieces, p => getColor(p) === color && getEmphasis(p))->coveredPositionsHelper(
     board,
   )
 }
 
 let getNumLegalMovesForColor = (board, color) => {
-  List.keep(board.pieces, p => getColor(p) === color)->List.reduce(0, (acc, x) =>
+  List.filter(board.pieces, p => getColor(p) === color)->List.reduce(0, (acc, x) =>
     acc + List.size(getLegalMoves(x, board))
   )
 }

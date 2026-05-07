@@ -1,5 +1,4 @@
 open Utils
-open Belt
 
 let board = piecesArr => {
   pieces: List.fromArray(piecesArr),
@@ -46,7 +45,7 @@ let init = () =>
   ])
 
 let getPiece = (board, (x, y), color) => {
-  List.getBy(board.pieces, p => {
+  List.find(board.pieces, p => {
     let colorPredicate = switch color {
     | Some(c) => getColor(p) === c
     | None => true
@@ -92,7 +91,7 @@ let rec confirmMove = (board, piece, position, _) => {
       // en passant
       let callback = if p.x !== newX && p.y !== newY && !hasPiece(board, position, None) {
         b => {
-          pieces: List.keep(b.pieces, i => getX(i) !== newX || getY(i) !== p.y),
+          pieces: List.filter(b.pieces, i => getX(i) !== newX || getY(i) !== p.y),
         }
       } else {
         noop
@@ -103,7 +102,7 @@ let rec confirmMove = (board, piece, position, _) => {
   | King(k) => {
       let y = backRank(k)
       let castleHelper = (oldRookX, newRookX, board) => {
-        let rook = getPiece(board, (oldRookX, y), None)->Option.getExn
+        let rook = getPiece(board, (oldRookX, y), None)->Option.getOrThrow
         b => confirmMove(b, rook, (newRookX, y), true)
       }
       if !k.hasMoved {
@@ -126,7 +125,7 @@ let rec confirmMove = (board, piece, position, _) => {
   }
   let pieces = list{
     newPiece,
-    ...List.keep(board.pieces, p => {
+    ...List.filter(board.pieces, p => {
       !(getX(p) === getX(piece) && getY(p) === getY(piece)) &&
       !(getX(p) === getX(newPiece) && getY(p) === getY(newPiece))
     })->List.map(p =>

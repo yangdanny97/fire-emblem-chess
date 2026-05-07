@@ -1,14 +1,15 @@
 {
+  "name": "fire-emblem-chess",
   "devDependencies": {
-    "bs-platform": "^9.0.2",
-    "rescript": "^10.0.1"
+    "rescript": "^12.2.0"
   },
   "scripts": {
     "build": "rescript",
-    "start": "rescript build -w",
+    "clean": "rescript clean",
+    "fmt": "rescript format",
     "bundle": "esbuild src/Game.js --outfile=out/game.js --bundle"
   },
   "dependencies": {
-    "esbuild": "^0.15.8"
+    "esbuild": "^0.28.0"
   }
 }
