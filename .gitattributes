@@ -1,2 +1,2 @@
-src/*.res.mjs linguist-generated
+src/*.res.js linguist-generated
 out/game.js linguist-generated
